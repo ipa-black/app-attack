@@ -6,42 +6,85 @@
     <title>إدارة التوقيع - APP ATTACK</title>
     <style>
         :root {
-            --bg-color: #e6f2ed; --card-bg: #ffffff; --primary-color: #10b981;
-            --text-color: #0f291e; --input-bg: #f2f9f6; --border-color: #bfe3d5;
+            --bg-color: #e6f2ed; 
+            --card-bg: #ffffff; 
+            --primary-color: #10b981;
+            --text-color: #0f291e; 
+            --input-bg: #f2f9f6; 
+            --border-color: #bfe3d5;
         }
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #0a1410; --card-bg: #11241c; --primary-color: #00ff88;
-                --text-color: #e0ffe8; --input-bg: #0c1a14; --border-color: #1c3a2d;
+                --bg-color: #0a1410; 
+                --card-bg: #11241c; 
+                --primary-color: #00ff88;
+                --text-color: #e0ffe8; 
+                --input-bg: #0c1a14; 
+                --border-color: #1c3a2d;
             }
         }
         body { 
-            font-family: system-ui, -apple-system, sans-serif; background: var(--bg-color); 
-            color: var(--text-color); display: flex; justify-content: center; 
-            align-items: center; min-height: 100vh; margin: 0; transition: background-color 0.3s;
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: var(--bg-color); 
+            color: var(--text-color); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            transition: background-color 0.3s;
         }
         .box { 
-            background: var(--card-bg); padding: 2.5rem; border-radius: 24px; 
-            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.1); width: 100%; max-width: 420px; 
+            background: var(--card-bg); 
+            padding: 2.5rem; 
+            border-radius: 24px; 
+            box-shadow: 0 15px 40px rgba(0, 255, 136, 0.1); 
+            width: 100%; 
+            max-width: 420px; 
             border: 1px solid var(--border-color);
         }
-        h2 { text-align: center; margin-top: 0; font-weight: 900; color: var(--primary-color); }
-        input { 
-            width: 100%; padding: 1rem; margin-bottom: 1.2rem; 
-            border: 1px solid var(--border-color); border-radius: 14px; 
-            box-sizing: border-box; background: var(--input-bg);
-            color: var(--text-color); font-size: 1rem; transition: border-color 0.3s;
+        h2 { 
+            text-align: center; 
+            margin-top: 0; 
+            font-weight: 900; 
+            color: var(--primary-color); 
         }
-        input:focus { outline: none; border-color: var(--primary-color); }
+        input { 
+            width: 100%; 
+            padding: 1rem; 
+            margin-bottom: 1.2rem; 
+            border: 1px solid var(--border-color); 
+            border-radius: 14px; 
+            box-sizing: border-box; 
+            background: var(--input-bg);
+            color: var(--text-color); 
+            font-size: 1rem; 
+            transition: border-color 0.3s;
+        }
+        input:focus { 
+            outline: none; 
+            border-color: var(--primary-color); 
+        }
         button { 
-            width: 100%; padding: 1.2rem; background: var(--primary-color); 
-            color: #000; border: none; border-radius: 14px; 
-            font-weight: 800; font-size: 1.1rem; cursor: pointer; 
+            width: 100%; 
+            padding: 1.2rem; 
+            background: var(--primary-color); 
+            color: #000; 
+            border: none; 
+            border-radius: 14px; 
+            font-weight: 800; 
+            font-size: 1.1rem; 
+            cursor: pointer; 
             transition: transform 0.2s, opacity 0.2s; 
         }
         button:active { transform: scale(0.96); }
         button:disabled { opacity: 0.7; cursor: not-allowed; }
-        .status { margin-top: 1.5rem; text-align: center; font-size: 0.95rem; font-weight: bold; }
+        .status { 
+            margin-top: 1.5rem; 
+            text-align: center; 
+            font-size: 0.95rem; 
+            font-weight: bold; 
+        }
     </style>
 </head>
 <body>
@@ -59,33 +102,51 @@
         async function publishApp() {
             const btn = document.getElementById('btn');
             const status = document.getElementById('status');
+            
+            // استخدام trim() لتنظيف الحقول من المسافات المخفية
             const data = {
-                name: document.getElementById('appName').value,
-                iconUrl: document.getElementById('iconUrl').value,
-                rawIpaUrl: document.getElementById('rawIpaUrl').value,
-                bundleId: document.getElementById('bundleId').value,
+                name: document.getElementById('appName').value.trim(),
+                iconUrl: document.getElementById('iconUrl').value.trim(),
+                rawIpaUrl: document.getElementById('rawIpaUrl').value.trim(),
+                bundleId: document.getElementById('bundleId').value.trim(),
                 password: document.getElementById('adminPassword').value
             };
             
             if(!data.name || !data.rawIpaUrl || !data.iconUrl || !data.password) {
-                status.style.color = '#ff3b30'; return status.innerText = "⚠️ يرجى إكمال الحقول!";
+                status.style.color = '#ff3b30'; 
+                return status.innerText = "⚠️ يرجى إكمال الحقول الأساسية وكلمة المرور!";
             }
             
-            btn.disabled = true; btn.innerText = "جاري الإرسال للتوقيع..."; status.innerText = "";
+            btn.disabled = true; 
+            btn.innerText = "جاري الإرسال للتوقيع..."; 
+            status.innerText = "";
+            
             try {
                 const res = await fetch('/api/admin', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify(data)
                 });
-                if(res.status === 401) throw new Error("كلمة المرور غير صحيحة!");
+                
+                if(res.status === 401) {
+                    throw new Error("كلمة المرور غير صحيحة!");
+                }
+                
                 if(res.ok) {
                     status.style.color = 'var(--primary-color)'; 
                     status.innerText = "✅ تم الإرسال بنجاح! جاري التوقيع...";
-                    document.getElementById('adminPassword').value = '';
-                } else throw new Error("حدث خطأ في الخادم.");
+                    document.getElementById('adminPassword').value = ''; // مسح كلمة المرور بعد النجاح
+                } else {
+                    const errorText = await res.text();
+                    throw new Error(errorText || "حدث خطأ في الخادم.");
+                }
             } catch(e) {
-                status.style.color = '#ff3b30'; status.innerText = `❌ ${e.message}`;
+                status.style.color = '#ff3b30'; 
+                status.innerText = `❌ ${e.message}`;
             }
-            btn.disabled = false; btn.innerText = "توقيع ونشر التطبيق";
+            
+            btn.disabled = false; 
+            btn.innerText = "توقيع ونشر التطبيق";
         }
     </script>
 </body>
