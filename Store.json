@@ -1,20 +1,5 @@
 [
   {
-    "id": "init-001",
-    "name": "Feather",
-    "bundleId": "com.izeusipa.feather",
-    "version": "1.0",
-    "iconUrl": "https://i.imgur.com/example-icon.png",
-    "signedIpaUrl": "https://example.com/placeholder"
-  },
-  {
-    "id": "91E373A7-3F92-4CA4-8B55-DE9713DDE7CB",
-    "name": "سينمانا",
-    "bundleId": "xyz.appinstall.nov.carbon.OneSignalNotificationServiceExtension",
-    "iconUrl": "https://up6.cc/2026/06/178079383813664.jpeg                                     توقيع ونشر التطبيق",
-    "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/سينمانا-signed.ipa"
-  },
-  {
     "id": "737B845F-B8BC-40C8-A1E9-021FA3128F18",
     "name": "سينمانا",
     "bundleId": "xyz.appinstall.nov.carbon.OneSignalNotificationServiceExtension",
