@@ -9,10 +9,10 @@
         /* اللون الأخضر الطاغي (الوضع الفاتح)         */
         /* ========================================= */
         :root {
-            --bg-color: #e6f2ed; /* أخضر نعناعي فاتح جداً للخلفية */
+            --bg-color: #e6f2ed;
             --card-bg: #ffffff;
-            --primary-color: #10b981; /* أخضر زمردي للأزرار */
-            --text-color: #0f291e; /* نصوص خضراء داكنة جداً */
+            --primary-color: #10b981;
+            --text-color: #0f291e;
             --title-color: #0a1f16;
             --shadow-color: rgba(16, 185, 129, 0.25);
             --border-color: #bfe3d5;
@@ -23,10 +23,10 @@
         /* ========================================= */
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #0a1410; /* أخضر أسود داكن جداً للخلفية */
-                --card-bg: #11241c; /* أخضر داكن للكروت */
-                --primary-color: #00ff88; /* أخضر نيون مشع (عين العملاق) */
-                --text-color: #e0ffe8; /* نصوص خضراء فاتحة */
+                --bg-color: #0a1410;
+                --card-bg: #11241c;
+                --primary-color: #00ff88;
+                --text-color: #e0ffe8;
                 --title-color: #00ff88;
                 --shadow-color: rgba(0, 255, 136, 0.15);
                 --border-color: #1c3a2d;
@@ -105,7 +105,9 @@
                 apps.forEach(app => {
                     const card = document.createElement('div');
                     card.className = 'app-card';
-                    const vercelApiUrl = `${window.location.origin}/api/plist?name=${encodeURIComponent(app.name)}&bundleId=${encodeURIComponent(app.bundleId)}&version=${encodeURIComponent(app.version || '1.0')}&ipaUrl=${encodeURIComponent(app.signedIpaUrl)}&iconUrl=${encodeURIComponent(app.iconUrl)}`;
+                    
+                    // تمت إضافة '&ext=.plist' في نهاية الرابط لخدع نظام أمان iOS ليقبل الرابط
+                    const vercelApiUrl = `${window.location.origin}/api/plist?name=${encodeURIComponent(app.name)}&bundleId=${encodeURIComponent(app.bundleId)}&version=${encodeURIComponent(app.version || '1.0')}&ipaUrl=${encodeURIComponent(app.signedIpaUrl)}&iconUrl=${encodeURIComponent(app.iconUrl)}&ext=.plist`;
 
                     card.innerHTML = `
                         <img src="${app.iconUrl}" alt="صورة ${app.name}" loading="lazy">
@@ -120,10 +122,16 @@
         }
 
         window.installApp = function(dynamicPlistUrl) {
-            // تشغيل رابط التثبيت أولاً
-            window.location.href = `itms-services://?action=download-manifest&url=${dynamicPlistUrl}`;
+            // 1. إنشاء إطار مخفي (iframe) لتشغيل التثبيت في الخلفية دون تغيير الرابط الأصلي للصفحة
+            let iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = `itms-services://?action=download-manifest&url=${dynamicPlistUrl}`;
+            document.body.appendChild(iframe);
             
-            // تأخير التوجيه للتليجرام بمقدار 900 مللي ثانية فقط
+            // تنظيف الإطار المخفي من الكود بعد إتمام مهمته
+            setTimeout(() => iframe.remove(), 2000);
+
+            // 2. التحويل الفوري لقناة التليجرام بعد 900 ملي ثانية (كما طلبت)
             setTimeout(() => { 
                 window.location.href = "https://t.me/hl00ss"; 
             }, 900);
