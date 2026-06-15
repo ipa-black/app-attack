@@ -20,15 +20,17 @@ jobs:
           brew install jq
 
       - name: Download Raw IPA
-        run: curl -L -o app-raw.ipa "${{ github.event.client_payload.rawIpaUrl }}"
+        env:
+          RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
+        run: curl -L -o app-raw.ipa "$RAW_URL"
 
       - name: Extract or Modify Bundle ID
         id: bundle_magic
+        env:
+          PROVIDED_BUNDLE: ${{ github.event.client_payload.bundleId }}
         run: |
           unzip -q app-raw.ipa -d payload_temp
           INFO_PLIST=$(find payload_temp/Payload -name "Info.plist" | head -n 1)
-          
-          PROVIDED_BUNDLE="${{ github.event.client_payload.bundleId }}"
           
           if [ -z "$PROVIDED_BUNDLE" ]; then
             FINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST")
@@ -44,15 +46,16 @@ jobs:
           echo "BUNDLE_ID=$FINAL_BUNDLE" >> $GITHUB_ENV
 
       - name: Sign IPA with zsign
+        env:
+          APP_NAME: ${{ github.event.client_payload.name }}
+          RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
         run: |
-          APP_NAME="${{ github.event.client_payload.name }}"
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
           
-          # تم وضع كلمة المرور 1 مباشرة هنا في حرف الـ p
+          # توقيع التطبيق بكلمة المرور 1
           zsign -k certs/cert.p12 -p "1" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
           
-          RELEASE_URL="${{ github.event.client_payload.rawIpaUrl }}"
-          TAG=$(echo "$RELEASE_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
+          TAG=$(echo "$RAW_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
 
@@ -60,28 +63,31 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ env.TAG }} "${{ env.SAFE_NAME }}-signed.ipa" --clobber
-          SIGNED_URL="https://github.com/${{ github.repository }}/releases/download/${{ env.TAG }}/${{ env.SAFE_NAME }}-signed.ipa"
+          gh release upload "$TAG" "${SAFE_NAME}-signed.ipa" --clobber
+          SIGNED_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/${SAFE_NAME}-signed.ipa"
           echo "SIGNED_URL=$SIGNED_URL" >> $GITHUB_ENV
 
       - name: Update Store.json database
+        env:
+          APP_NAME: ${{ github.event.client_payload.name }}
+          ICON_URL: ${{ github.event.client_payload.iconUrl }}
         run: |
           NEW_ID=$(uuidgen)
-          APP_NAME="${{ github.event.client_payload.name }}"
-          ICON_URL="${{ github.event.client_payload.iconUrl }}"
           
           jq --arg id "$NEW_ID" \
              --arg name "$APP_NAME" \
-             --arg bundle "${{ env.BUNDLE_ID }}" \
+             --arg bundle "$BUNDLE_ID" \
              --arg icon "$ICON_URL" \
-             --arg url "${{ env.SIGNED_URL }}" \
+             --arg url "$SIGNED_URL" \
              '. += [{"id": $id, "name": $name, "bundleId": $bundle, "iconUrl": $icon, "signedIpaUrl": $url}]' \
              Store.json > tmp.json && mv tmp.json Store.json
 
       - name: Commit and Push
+        env:
+          APP_NAME: ${{ github.event.client_payload.name }}
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add Store.json
-          git commit -m "Update Apps Section with: ${{ github.event.client_payload.name }}"
+          git commit -m "Update Apps Section with: $APP_NAME"
           git push
