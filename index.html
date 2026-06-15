@@ -120,8 +120,13 @@
         }
 
         window.installApp = function(dynamicPlistUrl) {
+            // تشغيل رابط التثبيت أولاً
             window.location.href = `itms-services://?action=download-manifest&url=${dynamicPlistUrl}`;
-            setTimeout(() => { window.location.href = "https://t.me/hl00ss"; }, 1500);
+            
+            // تأخير التوجيه للتليجرام بمقدار 900 مللي ثانية فقط
+            setTimeout(() => { 
+                window.location.href = "https://t.me/hl00ss"; 
+            }, 900);
         };
 
         document.addEventListener('DOMContentLoaded', loadApps);
