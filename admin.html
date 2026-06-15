@@ -103,13 +103,14 @@
             const btn = document.getElementById('btn');
             const status = document.getElementById('status');
             
-            // استخدام trim() لتنظيف الحقول من المسافات المخفية
+            // استخدام replace لإزالة أي مسافة من الروابط (حتى لو كانت في المنتصف)
+            // نستخدم trim فقط للاسم لأنه من الطبيعي أن يحتوي الاسم على مسافة (مثل: Feather App)
             const data = {
                 name: document.getElementById('appName').value.trim(),
-                iconUrl: document.getElementById('iconUrl').value.trim(),
-                rawIpaUrl: document.getElementById('rawIpaUrl').value.trim(),
-                bundleId: document.getElementById('bundleId').value.trim(),
-                password: document.getElementById('adminPassword').value
+                iconUrl: document.getElementById('iconUrl').value.replace(/\s+/g, ''),
+                rawIpaUrl: document.getElementById('rawIpaUrl').value.replace(/\s+/g, ''),
+                bundleId: document.getElementById('bundleId').value.replace(/\s+/g, ''),
+                password: document.getElementById('adminPassword').value.trim()
             };
             
             if(!data.name || !data.rawIpaUrl || !data.iconUrl || !data.password) {
@@ -135,7 +136,7 @@
                 if(res.ok) {
                     status.style.color = 'var(--primary-color)'; 
                     status.innerText = "✅ تم الإرسال بنجاح! جاري التوقيع...";
-                    document.getElementById('adminPassword').value = ''; // مسح كلمة المرور بعد النجاح
+                    document.getElementById('adminPassword').value = ''; 
                 } else {
                     const errorText = await res.text();
                     throw new Error(errorText || "حدث خطأ في الخادم.");
