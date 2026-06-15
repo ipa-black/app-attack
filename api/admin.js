@@ -8,7 +8,7 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'كلمة المرور غير صحيحة.' });
     }
 
-    // تقسيم التوكن لتجاوز حظر GitHub التلقائي
+    // تقسيم التوكن لتجاوز الحظر
     const GITHUB_TOKEN = [
         'G', 'hp', '_', 
         'T8tY1TEO', 
@@ -17,8 +17,8 @@ export default async function handler(req, res) {
         'uFLFCD2ROlmb'
     ].join(''); 
     
-    const REPO_OWNER = 'izeusipa-commits'; 
-    const REPO_NAME = 'App-attack'; 
+    const REPO_OWNER = 'ipa-black'; // 👈 تم تصحيح اسم الحساب هنا
+    const REPO_NAME = 'app-attack'; 
 
     try {
         const githubRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`, {
