@@ -22,7 +22,11 @@ jobs:
       - name: Download Raw IPA
         env:
           RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
-        run: curl -L -o app-raw.ipa "$RAW_URL"
+        run: |
+          # تنظيف الرابط إجبارياً من أي مسافات أو فواصل مخفية
+          CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
+          echo "جاري التحميل من الرابط النظيف: $CLEAN_URL"
+          curl -L -o app-raw.ipa "$CLEAN_URL"
 
       - name: Extract or Modify Bundle ID
         id: bundle_magic
@@ -51,11 +55,19 @@ jobs:
           RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
         run: |
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
+          CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
           
           # توقيع التطبيق بكلمة المرور 1
           zsign -k certs/cert.p12 -p "1" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
           
-          TAG=$(echo "$RAW_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
+          # استخراج التاج الخاص بالإصدار من الرابط
+          TAG=$(echo "$CLEAN_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
+          
+          # إذا لم يجد تاج (الرابط ليس من GitHub Releases)، نضع تاج افتراضي
+          if [ -z "$TAG" ]; then
+            TAG="v1.0"
+          fi
+          
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
 
@@ -63,6 +75,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # إنشاء Release إذا لم يكن موجوداً
+          gh release create "$TAG" --title "Release $TAG" --notes "Signed Apps" || true
+          
+          # رفع التطبيق الموقع
           gh release upload "$TAG" "${SAFE_NAME}-signed.ipa" --clobber
           SIGNED_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/${SAFE_NAME}-signed.ipa"
           echo "SIGNED_URL=$SIGNED_URL" >> $GITHUB_ENV
@@ -73,11 +89,12 @@ jobs:
           ICON_URL: ${{ github.event.client_payload.iconUrl }}
         run: |
           NEW_ID=$(uuidgen)
+          CLEAN_ICON=$(echo "$ICON_URL" | tr -d '[:space:]')
           
           jq --arg id "$NEW_ID" \
              --arg name "$APP_NAME" \
              --arg bundle "$BUNDLE_ID" \
-             --arg icon "$ICON_URL" \
+             --arg icon "$CLEAN_ICON" \
              --arg url "$SIGNED_URL" \
              '. += [{"id": $id, "name": $name, "bundleId": $bundle, "iconUrl": $icon, "signedIpaUrl": $url}]' \
              Store.json > tmp.json && mv tmp.json Store.json
