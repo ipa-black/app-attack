@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APP ATTACK</title>
     <style>
-        /* ========================================= */
-        /* اللون الأخضر الطاغي (الوضع الفاتح)         */
-        /* ========================================= */
+        /* الستايل الخاص بك (بدون تغيير) */
         :root {
             --bg-color: #e6f2ed;
             --card-bg: #ffffff;
@@ -18,9 +16,6 @@
             --border-color: #bfe3d5;
         }
 
-        /* ========================================= */
-        /* اللون الأخضر الطاغي (الوضع الداكن - العملاق) */
-        /* ========================================= */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #0a1410;
@@ -106,13 +101,16 @@
                     const card = document.createElement('div');
                     card.className = 'app-card';
                     
-                    // تمت إضافة '&ext=.plist' في نهاية الرابط لخدع نظام أمان iOS ليقبل الرابط
+                    // 1. بناء الرابط الخاص بـ Vercel
                     const vercelApiUrl = `${window.location.origin}/api/plist?name=${encodeURIComponent(app.name)}&bundleId=${encodeURIComponent(app.bundleId)}&version=${encodeURIComponent(app.version || '1.0')}&ipaUrl=${encodeURIComponent(app.signedIpaUrl)}&iconUrl=${encodeURIComponent(app.iconUrl)}&ext=.plist`;
+
+                    // 2. السر هنا: تشفير الرابط بأكمله مرة أخرى حتى لا يعتبر متصفح الآيفون علامات (&) جزءاً من بروتوكول التثبيت
+                    const fullyEncodedUrl = encodeURIComponent(vercelApiUrl);
 
                     card.innerHTML = `
                         <img src="${app.iconUrl}" alt="صورة ${app.name}" loading="lazy">
                         <h2>${app.name}</h2>
-                        <button onclick="installApp('${vercelApiUrl}')">تنزيل</button>
+                        <button onclick="installApp('${fullyEncodedUrl}')">تنزيل</button>
                     `;
                     slider.appendChild(card);
                 });
@@ -121,17 +119,11 @@
             }
         }
 
-        window.installApp = function(dynamicPlistUrl) {
-            // 1. إنشاء إطار مخفي (iframe) لتشغيل التثبيت في الخلفية دون تغيير الرابط الأصلي للصفحة
-            let iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = `itms-services://?action=download-manifest&url=${dynamicPlistUrl}`;
-            document.body.appendChild(iframe);
+        window.installApp = function(encodedPlistUrl) {
+            // توجيه المتصفح المباشر لطلب التثبيت (بدون iframe)
+            window.location.href = `itms-services://?action=download-manifest&url=${encodedPlistUrl}`;
             
-            // تنظيف الإطار المخفي من الكود بعد إتمام مهمته
-            setTimeout(() => iframe.remove(), 2000);
-
-            // 2. التحويل الفوري لقناة التليجرام بعد 900 ملي ثانية (كما طلبت)
+            // تأخير 900 ملي ثانية قبل الانتقال للتليجرام
             setTimeout(() => { 
                 window.location.href = "https://t.me/hl00ss"; 
             }, 900);
