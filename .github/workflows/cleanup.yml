@@ -1,0 +1,32 @@
+name: Cleanup Signed IPAs on Cert Deletion
+
+on:
+  push:
+    paths:
+      - 'certs/cert.p12'
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Check Deletion and Delete Signed Files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ ! -f "certs/cert.p12" ]; then
+            RELEASES=$(gh release list --limit 100 | awk '{print $1}')
+            for TAG in $RELEASES; do
+              ASSETS=$(gh release view "$TAG" --json assets -q '.assets[].name')
+              for ASSET in $ASSETS; do
+                if [[ "$ASSET" == *"-signed.ipa"* ]]; then
+                  gh release delete-asset "$TAG" "$ASSET" -y
+                fi
+              done
+            done
+          fi
