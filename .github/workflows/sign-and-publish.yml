@@ -44,13 +44,12 @@ jobs:
           echo "BUNDLE_ID=$FINAL_BUNDLE" >> $GITHUB_ENV
 
       - name: Sign IPA with zsign
-        env:
-          CERT_PASSWORD: ${{ secrets.CERT_PASSWORD }}
         run: |
           APP_NAME="${{ github.event.client_payload.name }}"
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
           
-          zsign -k certs/cert.p12 -p "$CERT_PASSWORD" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
+          # تم وضع كلمة المرور 1 مباشرة هنا في حرف الـ p
+          zsign -k certs/cert.p12 -p "1" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
           
           RELEASE_URL="${{ github.event.client_payload.rawIpaUrl }}"
           TAG=$(echo "$RELEASE_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
