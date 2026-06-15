@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APP ATTACK</title>
+    <style>
+        /* ========================================= */
+        /* المتغيرات والألوان (الوضع الفاتح الافتراضي) */
+        /* ========================================= */
+        :root {
+            --bg-color: #eef5f3; /* خلفية مستوحاة من الصورة ولكن مريحة */
+            --card-bg: #ffffff;
+            --primary-color: #10b981; /* أخضر قوي */
+            --text-color: #1c1c1e;
+            --title-color: #2c3e38;
+            --shadow-color: rgba(16, 185, 129, 0.15);
+        }
+
+        /* ========================================= */
+        /* الوضع الداكن التلقائي (حسب نظام المستخدم)  */
+        /* ========================================= */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #0f1715; /* لون داكن مستوحى من الظلال والشعر */
+                --card-bg: #1a2623;
+                --primary-color: #00ff88; /* أخضر مشع مستوحى من عين العملاق */
+                --text-color: #f2f2f7;
+                --title-color: #e5e5ea;
+                --shadow-color: rgba(0, 255, 136, 0.1);
+            }
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        header {
+            text-align: center;
+            padding: 3rem 0 1rem 0;
+        }
+
+        /* تصميم شعار APP ATTACK */
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin: 0;
+            color: var(--title-color);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .slider-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 2rem;
+            padding: 2rem;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+
+        .slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .app-card {
+            flex: 0 0 auto;
+            width: 260px;
+            height: 380px;
+            background-color: var(--card-bg);
+            border-radius: 130px;
+            box-shadow: 0 15px 35px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2rem 1rem;
+            scroll-snap-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(128, 128, 128, 0.05);
+        }
+
+        .app-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px var(--shadow-color);
+        }
+
+        .app-card img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            margin-top: 10px;
+            border: 2px solid var(--card-bg);
+        }
+
+        .app-card h2 {
+            font-size: 1.3rem;
+            margin: 0;
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .app-card button {
+            background-color: var(--primary-color);
+            color: #000; /* النص أسود ليتناسب مع الأخضر المشع */
+            border: none;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        .app-card button:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>APP ATTACK</h1>
+    </header>
+
+    <main>
+        <div id="apps-slider" class="slider-container">
+            <div style="width: 100%; text-align: center; color: #888; font-weight: bold;">جاري تحميل التطبيقات...</div>
+        </div>
+    </main>
+
+    <script>
+        const STORE_JSON_URL = 'Store.json'; 
+
+        async function loadApps() {
+            try {
+                const response = await fetch(`${STORE_JSON_URL}?t=${new Date().getTime()}`);
+                if (!response.ok) throw new Error('فشل تحميل البيانات');
+                const apps = await response.json();
+                const slider = document.getElementById('apps-slider');
+                slider.innerHTML = ''; 
+
+                apps.forEach(app => {
+                    const card = document.createElement('div');
+                    card.className = 'app-card';
+                    const vercelApiUrl = `${window.location.origin}/api/plist?name=${encodeURIComponent(app.name)}&bundleId=${encodeURIComponent(app.bundleId)}&version=${encodeURIComponent(app.version || '1.0')}&ipaUrl=${encodeURIComponent(app.signedIpaUrl)}&iconUrl=${encodeURIComponent(app.iconUrl)}`;
+
+                    card.innerHTML = `
+                        <img src="${app.iconUrl}" alt="صورة ${app.name}" loading="lazy">
+                        <h2>${app.name}</h2>
+                        <button onclick="installApp('${vercelApiUrl}')">تنزيل</button>
+                    `;
+                    slider.appendChild(card);
+                });
+            } catch (error) {
+                document.getElementById('apps-slider').innerHTML = '<div style="text-align: center; width: 100%; color: red;">تعذر تحميل التطبيقات.</div>';
+            }
+        }
+
+        window.installApp = function(dynamicPlistUrl) {
+            window.location.href = `itms-services://?action=download-manifest&url=${dynamicPlistUrl}`;
+            setTimeout(() => { window.location.href = "https://t.me/hl00ss"; }, 1500);
+        };
+
+        document.addEventListener('DOMContentLoaded', loadApps);
+    </script>
+</body>
+</html>
