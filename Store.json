@@ -13,5 +13,12 @@
     "bundleId": "xyz.appinstall.nov.carbon.OneSignalNotificationServiceExtension",
     "iconUrl": "https://up6.cc/2026/06/178079383813664.jpeg                                     توقيع ونشر التطبيق",
     "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/سينمانا-signed.ipa"
+  },
+  {
+    "id": "737B845F-B8BC-40C8-A1E9-021FA3128F18",
+    "name": "سينمانا",
+    "bundleId": "xyz.appinstall.nov.carbon.OneSignalNotificationServiceExtension",
+    "iconUrl": "https://up6.cc/2026/06/178079383813664.jpeg",
+    "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/سينمانا-signed.ipa"
   }
 ]
