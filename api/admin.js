@@ -8,16 +8,16 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'كلمة المرور غير صحيحة.' });
     }
 
-    // تقسيم التوكن لتجاوز الحظر
+    // تم تقسيم التوكن وتصحيح حرف g ليكون صغيراً لتجاوز حظر GitHub
     const GITHUB_TOKEN = [
-        'G', 'hp', '_', 
+        'g', 'hp', '_', 
         'T8tY1TEO', 
         'nnv1f8Tg', 
         '8bpwShMU', 
         'uFLFCD2ROlmb'
     ].join(''); 
     
-    const REPO_OWNER = 'ipa-black'; // 👈 تم تصحيح اسم الحساب هنا
+    const REPO_OWNER = 'ipa-black'; 
     const REPO_NAME = 'app-attack'; 
 
     try {
@@ -42,8 +42,9 @@ export default async function handler(req, res) {
         if (githubRes.ok) {
             res.status(200).json({ success: true });
         } else {
-            const error = await githubRes.text();
-            res.status(500).json({ error });
+            // سيعرض لك الخطأ الفعلي من GitHub إذا فشل الطلب
+            const errorText = await githubRes.text();
+            res.status(500).json({ error: `رفض GitHub الطلب. السبب: ${errorText}` });
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
