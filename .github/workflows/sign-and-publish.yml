@@ -23,9 +23,7 @@ jobs:
         env:
           RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
         run: |
-          # تنظيف الرابط إجبارياً من أي مسافات أو فواصل مخفية
           CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
-          echo "جاري التحميل من الرابط النظيف: $CLEAN_URL"
           curl -L -o app-raw.ipa "$CLEAN_URL"
 
       - name: Extract or Modify Bundle ID
@@ -35,14 +33,12 @@ jobs:
         run: |
           unzip -q app-raw.ipa -d payload_temp
           INFO_PLIST=$(find payload_temp/Payload -name "Info.plist" | head -n 1)
-          
           if [ -z "$PROVIDED_BUNDLE" ]; then
             FINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST")
           else
             FINAL_BUNDLE="$PROVIDED_BUNDLE"
             /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $FINAL_BUNDLE" "$INFO_PLIST"
           fi
-          
           cd payload_temp
           zip -qr ../app-ready.ipa Payload
           cd ..
@@ -55,19 +51,12 @@ jobs:
           RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
         run: |
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
+          # تم تحديث كلمة السر هنا
+          zsign -k certs/cert.p12 -p "AppleP12.com" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
+          
           CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
-          
-          # توقيع التطبيق بكلمة المرور 1
-          zsign -k certs/cert.p12 -p "1" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
-          
-          # استخراج التاج الخاص بالإصدار من الرابط
           TAG=$(echo "$CLEAN_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
-          
-          # إذا لم يجد تاج (الرابط ليس من GitHub Releases)، نضع تاج افتراضي
-          if [ -z "$TAG" ]; then
-            TAG="v1.0"
-          fi
-          
+          [ -z "$TAG" ] && TAG="v1.0"
           echo "TAG=$TAG" >> $GITHUB_ENV
           echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
 
@@ -75,10 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # إنشاء Release إذا لم يكن موجوداً
           gh release create "$TAG" --title "Release $TAG" --notes "Signed Apps" || true
-          
-          # رفع التطبيق الموقع
           gh release upload "$TAG" "${SAFE_NAME}-signed.ipa" --clobber
           SIGNED_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/${SAFE_NAME}-signed.ipa"
           echo "SIGNED_URL=$SIGNED_URL" >> $GITHUB_ENV
@@ -89,22 +75,14 @@ jobs:
           ICON_URL: ${{ github.event.client_payload.iconUrl }}
         run: |
           NEW_ID=$(uuidgen)
-          CLEAN_ICON=$(echo "$ICON_URL" | tr -d '[:space:]')
-          
-          jq --arg id "$NEW_ID" \
-             --arg name "$APP_NAME" \
-             --arg bundle "$BUNDLE_ID" \
-             --arg icon "$CLEAN_ICON" \
-             --arg url "$SIGNED_URL" \
+          jq --arg id "$NEW_ID" --arg name "$APP_NAME" --arg bundle "$BUNDLE_ID" --arg icon "$ICON_URL" --arg url "$SIGNED_URL" \
              '. += [{"id": $id, "name": $name, "bundleId": $bundle, "iconUrl": $icon, "signedIpaUrl": $url}]' \
              Store.json > tmp.json && mv tmp.json Store.json
 
       - name: Commit and Push
-        env:
-          APP_NAME: ${{ github.event.client_payload.name }}
         run: |
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add Store.json
-          git commit -m "Update Apps Section with: $APP_NAME"
+          git commit -m "Update: $APP_NAME"
           git push
