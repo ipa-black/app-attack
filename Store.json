@@ -5,5 +5,12 @@
     "bundleId": "xyz.appinstall.nov.carbon.OneSignalNotificationServiceExtension",
     "iconUrl": "https://up6.cc/2026/06/178079383813664.jpeg",
     "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/سينمانا-signed.ipa"
+  },
+  {
+    "id": "F3095614-0F04-48E5-BD47-13C566A287DB",
+    "name": "vodu",
+    "bundleId": "L10n-swift-L10n-swift-resources",
+    "iconUrl": "https://github.com/ipa-black/app-attack/blob/main/icons/IMG_0051.jpeg",
+    "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/vodu-signed.ipa"
   }
 ]
