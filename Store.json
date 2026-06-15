@@ -1,0 +1,10 @@
+[
+  {
+    "id": "init-001",
+    "name": "Feather",
+    "bundleId": "com.izeusipa.feather",
+    "version": "1.0",
+    "iconUrl": "https://i.imgur.com/example-icon.png",
+    "signedIpaUrl": "https://example.com/placeholder"
+  }
+]
