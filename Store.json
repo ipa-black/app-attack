@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "id": "36E6E8B4-F6DA-4AF4-BE08-31F0AF294B43",
+    "name": "سينمانا",
+    "bundleId": "com.foox.cinemanaa.fixed",
+    "iconUrl": "https://up6.cc/2026/06/178079383813664.jpeg",
+    "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/سينمانا-signed.ipa"
+  }
+]
