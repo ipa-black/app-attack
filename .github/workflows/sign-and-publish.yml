@@ -31,19 +31,14 @@ jobs:
         env:
           PROVIDED_BUNDLE: ${{ github.event.client_payload.bundleId }}
         run: |
-          # 1. فك ضغط مؤقت لقراءة البندل الأصلي فقط (بدون التعديل أو إفساد الملف)
+          # فك ضغط مؤقت لقراءة البندل الأصلي بدقة
           unzip -q app-raw.ipa -d temp_dir
-          
-          # استخراج البندل الأساسي للتطبيق بدقة
           ORIGINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" temp_dir/Payload/*.app/Info.plist)
-          
-          # مسح المجلد المؤقت لأننا سنستخدم الملف الخام للتوقيع
           rm -rf temp_dir
           
+          # إذا ترك المستخدم حقل البندل فارغاً، يتم استخدام البندل الأصلي للحفاظ على استقرار الشهادة
           if [ -z "$PROVIDED_BUNDLE" ]; then
-            # توليد بندل عشوائي
-            RANDOM_SUFFIX=$(openssl rand -hex 2)
-            FINAL_BUNDLE="${ORIGINAL_BUNDLE}.attack${RANDOM_SUFFIX}"
+            FINAL_BUNDLE="$ORIGINAL_BUNDLE"
           else
             FINAL_BUNDLE="$PROVIDED_BUNDLE"
           fi
@@ -57,7 +52,7 @@ jobs:
         run: |
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
           
-          # 2. السر هنا: إعطاء مهمة تغيير البندل (-b) لأداة zsign لتعديله في كل الإضافات بشكل آمن!
+          # التوقيع الذكي وتغيير البندل لكل الإضافات (Extensions) دفعة واحدة
           zsign -k certs/cert.p12 -p "AppleP12.com" -m certs/profile.mobileprovision -b "$BUNDLE_ID" app-raw.ipa -o "${SAFE_NAME}-signed.ipa"
           
           CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
@@ -90,5 +85,5 @@ jobs:
           git config user.name "GitHub Actions Bot"
           git config user.email "actions@github.com"
           git add Store.json
-          git commit -m "Update: $APP_NAME"
+          git commit -m "Update Store: $APP_NAME"
           git push
