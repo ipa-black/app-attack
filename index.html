@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ATTACK STORE</title>
+    <title>متجر التطبيقات</title>
     <style>
         :root { --bg: #f2f2f7; --card: #ffffff; --primary: #007aff; --text: #1c1c1e; --border: #e5e5ea; }
         @media (prefers-color-scheme: dark) { :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #f2f2f7; --border: #38383a; } }
@@ -43,7 +43,7 @@
         <h1>الرئيسية</h1>
         <div class="header-buttons">
             <button onclick="toggleGuide()" class="btn-top btn-guide">طريقة التثبيت</button>
-            <a href="https://t.me/YOUR_CHANNEL_LINK_HERE" class="btn-top btn-tg" target="_blank">قناتنا</a>
+            <a href="https://t.me/Hl00ss" class="btn-top btn-tg" target="_blank">قناتنا</a>
         </div>
     </div>
 
@@ -63,8 +63,8 @@
     </div>
 
     <script>
-        // ضع رابط قناتك هنا أيضاً ليعمل التحويل التلقائي بعد التثبيت
-        const TELEGRAM_CHANNEL = "https://t.me/YOUR_CHANNEL_LINK_HERE"; 
+        // رابط قناتك المباشر للتحويل التلقائي
+        const TELEGRAM_CHANNEL = "https://t.me/Hl00ss"; 
 
         function toggleGuide() {
             const modal = document.getElementById('guideModal');
@@ -108,13 +108,13 @@
             const finalManifestUrl = manifestApi + query;
             const itmsUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(finalManifestUrl)}`;
 
-            // التوجيه المباشر والآمن لضمان ظهور رسالة التثبيت بدون حجب من Safari
+            // فتح رابط التثبيت مباشرة لضمان عدم حظر متصفح الآيفون للنافذة المنبثقة
             window.location.href = itmsUrl;
 
-            // الانتظار لمدة 3.5 ثانية (لضمان تسجيل الآيفون لطلب التثبيت) ثم التحويل للتلجرام
+            // الانتظار لمدة 3 ثوانٍ حتى يأخذ النظام أمر التثبيت، ثم يتم تحويل المستخدم لقناتك
             setTimeout(() => {
                 window.location.href = TELEGRAM_CHANNEL;
-            }, 3500);
+            }, 3000);
         }
 
         window.onload = fetchStoreApps;
