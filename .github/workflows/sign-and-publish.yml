@@ -26,35 +26,28 @@ jobs:
           CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
           curl -L -o app-raw.ipa "$CLEAN_URL"
 
-      - name: Extract or Modify Bundle ID
+      - name: Prepare Bundle ID
         id: bundle_magic
         env:
           PROVIDED_BUNDLE: ${{ github.event.client_payload.bundleId }}
         run: |
-          unzip -q app-raw.ipa -d payload_temp
-          INFO_PLIST=$(find payload_temp/Payload -name "Info.plist" | head -n 1)
+          # 1. فك ضغط مؤقت لقراءة البندل الأصلي فقط (بدون التعديل أو إفساد الملف)
+          unzip -q app-raw.ipa -d temp_dir
           
-          # استخراج البندل الأصلي
-          ORIGINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST")
+          # استخراج البندل الأساسي للتطبيق بدقة
+          ORIGINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" temp_dir/Payload/*.app/Info.plist)
+          
+          # مسح المجلد المؤقت لأننا سنستخدم الملف الخام للتوقيع
+          rm -rf temp_dir
           
           if [ -z "$PROVIDED_BUNDLE" ]; then
-            # إذا كان الحقل فارغاً: توليد لاحقة عشوائية لمنع التعارض (تكرار التطبيق)
+            # توليد بندل عشوائي
             RANDOM_SUFFIX=$(openssl rand -hex 2)
             FINAL_BUNDLE="${ORIGINAL_BUNDLE}.attack${RANDOM_SUFFIX}"
           else
-            # إذا قمت بإدخال بندل يدوي في اللوحة، سيتم استخدامه
             FINAL_BUNDLE="$PROVIDED_BUNDLE"
           fi
           
-          # حقن البندل الجديد وتغييره فعلياً داخل ملف التطبيق
-          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $FINAL_BUNDLE" "$INFO_PLIST"
-          
-          cd payload_temp
-          zip -qr ../app-ready.ipa Payload
-          cd ..
-          rm -rf payload_temp
-          
-          # تصدير البندل الجديد ليتم حفظه في قاعدة البيانات Store.json
           echo "BUNDLE_ID=$FINAL_BUNDLE" >> $GITHUB_ENV
 
       - name: Sign IPA with zsign
@@ -63,8 +56,9 @@ jobs:
           RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
         run: |
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
-          # توقيع التطبيق باستخدام الشهادة
-          zsign -k certs/cert.p12 -p "AppleP12.com" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
+          
+          # 2. السر هنا: إعطاء مهمة تغيير البندل (-b) لأداة zsign لتعديله في كل الإضافات بشكل آمن!
+          zsign -k certs/cert.p12 -p "AppleP12.com" -m certs/profile.mobileprovision -b "$BUNDLE_ID" app-raw.ipa -o "${SAFE_NAME}-signed.ipa"
           
           CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
           TAG=$(echo "$CLEAN_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
@@ -87,7 +81,6 @@ jobs:
           ICON_URL: ${{ github.event.client_payload.iconUrl }}
         run: |
           NEW_ID=$(uuidgen)
-          # حفظ البندل المعدل ($BUNDLE_ID) في الجيسون
           jq --arg id "$NEW_ID" --arg name "$APP_NAME" --arg bundle "$BUNDLE_ID" --arg icon "$ICON_URL" --arg url "$SIGNED_URL" \
              '. += [{"id": $id, "name": $name, "bundleId": $bundle, "iconUrl": $icon, "signedIpaUrl": $url}]' \
              Store.json > tmp.json && mv tmp.json Store.json
