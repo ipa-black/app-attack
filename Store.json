@@ -12,5 +12,12 @@
     "bundleId": "com.sinosig.ybapp",
     "iconUrl": "https://raw.githubusercontent.com/ipa-black/app-attack/refs/heads/main/icons/IMG_0051.jpeg",
     "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/vodu-signed.ipa"
+  },
+  {
+    "id": "380F0399-9CB1-4156-86C4-ED5C47E70620",
+    "name": "انستا بلاس",
+    "bundleId": "com..instagram.attack4c46",
+    "iconUrl": "https://up6.cc/2026/06/178161193271241.jpeg",
+    "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/انستابلاس-signed.ipa"
   }
 ]
