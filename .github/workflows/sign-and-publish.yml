@@ -33,16 +33,28 @@ jobs:
         run: |
           unzip -q app-raw.ipa -d payload_temp
           INFO_PLIST=$(find payload_temp/Payload -name "Info.plist" | head -n 1)
+          
+          # استخراج البندل الأصلي
+          ORIGINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST")
+          
           if [ -z "$PROVIDED_BUNDLE" ]; then
-            FINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$INFO_PLIST")
+            # إذا كان الحقل فارغاً: توليد لاحقة عشوائية لمنع التعارض (تكرار التطبيق)
+            RANDOM_SUFFIX=$(openssl rand -hex 2)
+            FINAL_BUNDLE="${ORIGINAL_BUNDLE}.attack${RANDOM_SUFFIX}"
           else
+            # إذا قمت بإدخال بندل يدوي في اللوحة، سيتم استخدامه
             FINAL_BUNDLE="$PROVIDED_BUNDLE"
-            /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $FINAL_BUNDLE" "$INFO_PLIST"
           fi
+          
+          # حقن البندل الجديد وتغييره فعلياً داخل ملف التطبيق
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $FINAL_BUNDLE" "$INFO_PLIST"
+          
           cd payload_temp
           zip -qr ../app-ready.ipa Payload
           cd ..
           rm -rf payload_temp
+          
+          # تصدير البندل الجديد ليتم حفظه في قاعدة البيانات Store.json
           echo "BUNDLE_ID=$FINAL_BUNDLE" >> $GITHUB_ENV
 
       - name: Sign IPA with zsign
@@ -51,7 +63,7 @@ jobs:
           RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
         run: |
           SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
-          # تم تحديث كلمة السر هنا
+          # توقيع التطبيق باستخدام الشهادة
           zsign -k certs/cert.p12 -p "AppleP12.com" -m certs/profile.mobileprovision app-ready.ipa -o "${SAFE_NAME}-signed.ipa"
           
           CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
@@ -75,6 +87,7 @@ jobs:
           ICON_URL: ${{ github.event.client_payload.iconUrl }}
         run: |
           NEW_ID=$(uuidgen)
+          # حفظ البندل المعدل ($BUNDLE_ID) في الجيسون
           jq --arg id "$NEW_ID" --arg name "$APP_NAME" --arg bundle "$BUNDLE_ID" --arg icon "$ICON_URL" --arg url "$SIGNED_URL" \
              '. += [{"id": $id, "name": $name, "bundleId": $bundle, "iconUrl": $icon, "signedIpaUrl": $url}]' \
              Store.json > tmp.json && mv tmp.json Store.json
