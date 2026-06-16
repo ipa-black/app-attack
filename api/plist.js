@@ -5,7 +5,6 @@ export default function handler(req, res) {
         return res.status(400).send('بيانات التطبيق غير مكتملة');
     }
 
-    // دالة حاسمة لتشفير الرموز الخاصة التي تسبب خلل "تعذر تثبيت التطبيق"
     const escapeXml = (unsafe) => {
         if (!unsafe) return '';
         return unsafe.replace(/[<>&'"]/g, c => {
@@ -25,6 +24,7 @@ export default function handler(req, res) {
     const safeIpaUrl = escapeXml(ipaUrl);
     const safeIconUrl = escapeXml(iconUrl || 'https://via.placeholder.com/150');
 
+    // كود الـ XML يبدأ من بداية السطر تماماً وبدون أي إزاحة للحماية من الرفض
     const plistXML = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -63,9 +63,9 @@ export default function handler(req, res) {
         </dict>
     </array>
 </dict>
-</plist>`;
+</plist>`.trim();
 
-    // إرسال الملف بتنسيق text/xml صريح ومفهوم لنظام iOS
-    res.setHeader('Content-Type', 'text/xml; charset=utf-8');
+    // إرسال الهيدر الرسمي والأكثر أماناً لنظام iOS لمنع هبوط التثبيت
+    res.setHeader('Content-Type', 'application/x-apple-aspen-manifest');
     res.status(200).send(plistXML);
 }
