@@ -2,61 +2,89 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard - APP ATTACK</title>
     <style>
-        :root {
-            --bg: #f5f5f7; --card: #ffffff; --primary: #007aff; --text: #1d1d1f; --border: #d2d2d7; --danger: #ff3b30;
-        }
-        @media (prefers-color-scheme: dark) {
-            :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #f5f5f7; --border: #38383a; }
-        }
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
+        :root { --bg: #f5f5f7; --card: #ffffff; --primary: #007aff; --text: #1d1d1f; --border: #d2d2d7; --danger: #ff3b30; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #f5f5f7; --border: #38383a; } }
+        
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 800px; margin: auto; }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; background: var(--card); padding: 10px; border-radius: 14px; }
-        .tab { flex: 1; padding: 12px; text-align: center; background: transparent; border: none; color: var(--text); font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        
+        /* تصميم التبويبات للهواتف */
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: var(--card); padding: 8px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .tab { flex: 1; padding: 12px; text-align: center; background: transparent; border: none; color: var(--text); font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
         .tab.active { background: var(--primary); color: white; }
-        .box { background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.05); display: none; border: 1px solid var(--border); }
+        
+        .box { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.05); display: none; border: 1px solid var(--border); }
         .box.active { display: block; }
-        input { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); box-sizing: border-box; }
-        button { width: 100%; padding: 12px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-bottom: 10px;}
+        
+        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 1rem; }
+        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-bottom: 10px; font-size: 1rem; }
+        
         .btn-primary { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: var(--border); color: var(--text); }
-        .app-list { display: flex; flex-direction: column; gap: 10px; margin-top: 20px;}
-        .app-item { display: flex; align-items: center; justify-content: space-between; padding: 15px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); }
-        .app-item img { width: 50px; height: 50px; border-radius: 10px; margin-left: 15px; }
-        .app-info { flex: 1; }
-        .queue-list { margin-bottom: 15px; padding: 10px; background: var(--bg); border-radius: 10px; font-size: 0.9em;}
+        
+        .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
+        .input-group input { margin-bottom: 0; flex: 1; }
+        .input-group button { width: auto; min-width: 110px; margin-bottom: 0; white-space: nowrap; }
+        
+        .app-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px;}
+        .app-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg); border-radius: 14px; border: 1px solid var(--border); }
+        .app-item img { width: 50px; height: 50px; border-radius: 12px; margin-left: 12px; object-fit: cover; }
+        .app-info { flex: 1; overflow: hidden; }
+        .app-info strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1rem; }
+        .app-info small { color: gray; font-size: 0.8rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-actions { display: flex; flex-direction: column; gap: 5px; }
+        .app-actions button { padding: 8px 12px; margin: 0; font-size: 0.85rem; border-radius: 8px; }
+
+        .queue-list { margin-bottom: 15px; padding: 12px; background: var(--bg); border-radius: 12px; font-size: 0.9em; line-height: 1.5; border: 1px dashed var(--border); }
+
+        /* تعديلات مخصصة لشاشات الهواتف */
+        @media (max-width: 600px) {
+            .input-group { flex-direction: column; } /* جعل زر الرفع أسفل الحقل في الهاتف */
+            .input-group button { width: 100%; }
+            .box { padding: 15px; }
+            .app-actions { flex-direction: row; } /* جعل أزرار التعديل والحذف بجانب بعضها */
+            .app-actions button { flex: 1; text-align: center; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('sign')">قسم التوقيع</button>
-            <button class="tab" onclick="switchTab('manage'); loadApps();">قسم التطبيقات</button>
+            <button class="tab active" onclick="switchTab('sign')">التوقيع والرفع</button>
+            <button class="tab" onclick="switchTab('manage'); loadApps();">إدارة المتجر</button>
         </div>
 
         <div id="sign" class="box active">
-            <h3 style="margin-top:0;">إضافة وتوقيع التطبيقات</h3>
+            <h3 style="margin-top:0; font-size: 1.2rem;">إضافة وتوقيع التطبيقات</h3>
             <input type="text" id="appName" placeholder="اسم التطبيق">
-            <input type="url" id="iconUrl" placeholder="رابط الأيقونة المباشر">
-            <input type="url" id="rawIpaUrl" placeholder="رابط IPA المباشر (للتوقيع)">
-            <input type="text" id="bundleId" placeholder="البندل آيدي (اختياري)">
+            <input type="url" id="iconUrl" placeholder="رابط الأيقونة (مباشر)">
+            
+            <div class="input-group">
+                <input type="url" id="rawIpaUrl" placeholder="رابط IPA (أو ارفع ملفك)">
+                <button class="btn-secondary" onclick="document.getElementById('ipaFile').click()">📂 رفع ملف</button>
+                <input type="file" id="ipaFile" accept=".ipa" style="display: none;" onchange="uploadDirectToGitHub(this)">
+            </div>
+            <div id="uploadStatus" style="font-size: 0.85em; color: var(--primary); margin-bottom: 15px; font-weight: bold;"></div>
+
+            <input type="text" id="bundleId" placeholder="البندل آيدي (اتركه فارغاً للاستخراج)">
             
             <div class="queue-list" id="queueList">قائمة الانتظار: لا يوجد تطبيقات</div>
             
             <button class="btn-secondary" onclick="addToQueue()">+ إضافة للقائمة (للتوقيع المتعدد)</button>
             
-            <input type="password" id="adminPassword" placeholder="كلمة المرور الإدارية" style="border-right: 4px solid var(--danger);">
+            <input type="password" id="adminPassword" placeholder="كلمة المرور (مطلوبة للرفع والتوقيع)" style="border-right: 4px solid var(--danger);">
             <button class="btn-primary" onclick="startProcessing()" id="processBtn">توقيع وإرسال الآن</button>
-            <div id="signStatus" style="text-align:center; margin-top:10px; font-weight:bold;"></div>
+            <div id="signStatus" style="text-align:center; margin-top:10px; font-weight:bold; font-size: 0.9rem;"></div>
         </div>
 
         <div id="manage" class="box">
-            <h3 style="margin-top:0;">إدارة قسم التطبيقات</h3>
-            <input type="password" id="managePassword" placeholder="كلمة المرور لتأكيد التعديلات" style="border-right: 4px solid var(--danger);">
-            <div id="manageStatus" style="text-align:center; margin-bottom:10px; font-weight:bold;"></div>
+            <h3 style="margin-top:0; font-size: 1.2rem;">إدارة التطبيقات المرفوعة</h3>
+            <input type="password" id="managePassword" placeholder="كلمة المرور لتأكيد التغييرات" style="border-right: 4px solid var(--danger);">
+            <div id="manageStatus" style="text-align:center; margin-bottom:10px; font-weight:bold; font-size: 0.9rem;"></div>
             <div class="app-list" id="appsContainer">جاري التحميل...</div>
         </div>
     </div>
@@ -66,7 +94,6 @@
         let currentApps = [];
         let currentSha = '';
 
-        // التنقل بين الأقسام
         function switchTab(tabId) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.box').forEach(b => b.classList.remove('active'));
@@ -74,7 +101,79 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // --- وظائف قسم التوقيع (الرفع المتعدد) ---
+        // --- ميزة الرفع المباشر إلى GitHub Releases ---
+        async function uploadDirectToGitHub(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const pass = document.getElementById('adminPassword').value;
+            const status = document.getElementById('uploadStatus');
+            
+            if (!pass) {
+                alert("⚠️ يرجى إدخال كلمة المرور الإدارية في الأسفل أولاً ليتمكن النظام من رفع الملف!");
+                input.value = ''; return;
+            }
+
+            status.style.color = "var(--text)";
+            status.innerText = "⏳ جاري تهيئة الاتصال السحابي...";
+
+            try {
+                // جلب التوكن
+                const tokenRes = await fetch('/api/get-token', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ password: pass })
+                });
+                if (!tokenRes.ok) throw new Error("كلمة المرور الإدارية غير صحيحة.");
+                const { token } = await tokenRes.json();
+
+                // التحقق من وجود قسم الإصدارات (Release) المخصص للملفات الخام
+                status.innerText = "⏳ جاري إعداد مساحة GitHub Releases...";
+                const tag = 'raw-uploads'; 
+                const releaseRes = await fetch('https://api.github.com/repos/ipa-black/app-attack/releases/tags/' + tag, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                
+                let releaseId;
+                if (releaseRes.ok) {
+                    releaseId = (await releaseRes.json()).id;
+                } else {
+                    const newRelease = await fetch('https://api.github.com/repos/ipa-black/app-attack/releases', {
+                        method: 'POST',
+                        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ tag_name: tag, name: "Raw App Uploads", draft: false })
+                    });
+                    releaseId = (await newRelease.json()).id;
+                }
+
+                // الرفع لـ GitHub Releases
+                status.innerText = `🚀 جاري الرفع (${(file.size / 1024 / 1024).toFixed(1)} MB)... لا تغلق الصفحة.`;
+                const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); 
+                
+                const uploadRes = await fetch(`https://uploads.github.com/repos/ipa-black/app-attack/releases/${releaseId}/assets?name=${cleanFileName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/octet-stream'
+                    },
+                    body: file
+                });
+
+                if (!uploadRes.ok) throw new Error("فشل الرفع. قد يكون الملف كبيراً جداً أو مساحة GitHub ممتلئة.");
+                const assetData = await uploadRes.json();
+
+                // لصق الرابط المباشر للملف المرفوع في الحقل
+                document.getElementById('rawIpaUrl').value = assetData.browser_download_url;
+                status.style.color = "var(--primary)";
+                status.innerText = "✅ تم الرفع لـ Releases بنجاح! جاهز للتوقيع.";
+
+            } catch (e) {
+                status.style.color = "var(--danger)";
+                status.innerText = `❌ ${e.message}`;
+            }
+            input.value = ''; 
+        }
+
+        // --- وظائف التوقيع المتعدد ---
         function addToQueue() {
             const app = {
                 name: document.getElementById('appName').value.trim(),
@@ -84,19 +183,19 @@
             };
             if(!app.name || !app.rawIpaUrl) return alert("الاسم ورابط IPA مطلوبان!");
             appQueue.push(app);
-            updateQueueUI();
             
-            // تفريغ الحقول للتطبيق التالي
             document.getElementById('appName').value = '';
             document.getElementById('iconUrl').value = '';
             document.getElementById('rawIpaUrl').value = '';
             document.getElementById('bundleId').value = '';
+            document.getElementById('uploadStatus').innerText = '';
+            updateQueueUI();
         }
 
         function updateQueueUI() {
             const qList = document.getElementById('queueList');
             if(appQueue.length === 0) qList.innerHTML = "قائمة الانتظار: لا يوجد تطبيقات";
-            else qList.innerHTML = `قائمة الانتظار: ${appQueue.length} تطبيق جاهز للتوقيع.<br>` + appQueue.map(a => `- ${a.name}`).join('<br>');
+            else qList.innerHTML = `قائمة الانتظار: ${appQueue.length} تطبيقات جاهزة.<br>` + appQueue.map(a => `• ${a.name}`).join('<br>');
         }
 
         async function startProcessing() {
@@ -104,12 +203,11 @@
             const status = document.getElementById('signStatus');
             const btn = document.getElementById('processBtn');
             
-            // إذا كانت القائمة فارغة لكن الحقول ممتلئة، نرسل التطبيق الحالي مباشرة
             if(appQueue.length === 0) {
                 if(document.getElementById('appName').value) addToQueue();
                 else return alert("لا يوجد تطبيقات للإرسال!");
             }
-            if(!pass) return alert("كلمة المرور مطلوبة!");
+            if(!pass) return alert("يرجى إدخال كلمة المرور!");
 
             btn.disabled = true;
             for(let i=0; i<appQueue.length; i++) {
@@ -120,7 +218,7 @@
                         method: 'POST', headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({...appQueue[i], password: pass})
                     });
-                    if(!res.ok) throw new Error("حدث خطأ في الإرسال");
+                    if(!res.ok) throw new Error("حدث خطأ");
                 } catch(e) {
                     status.style.color = "var(--danger)";
                     status.innerText = `❌ فشل إرسال ${appQueue[i].name}`;
@@ -128,38 +226,42 @@
                 }
             }
             status.style.color = "var(--primary)";
-            status.innerText = "✅ تم إرسال جميع التطبيقات للتوقيع بنجاح!";
+            status.innerText = "✅ تمت الإضافة للتوقيع بنجاح!";
             appQueue = []; updateQueueUI();
             btn.disabled = false;
         }
 
-        // --- وظائف إدارة قسم التطبيقات ---
+        // --- وظائف إدارة التطبيقات ---
         async function loadApps() {
             const container = document.getElementById('appsContainer');
-            container.innerHTML = "جاري جلب التطبيقات من المتجر...";
+            container.innerHTML = "<div style='text-align:center;'>جاري جلب التطبيقات... ⏳</div>";
             try {
                 const res = await fetch('/api/manage');
                 const data = await res.json();
                 currentApps = data.apps || [];
                 currentSha = data.sha;
                 renderApps();
-            } catch(e) { container.innerHTML = "❌ فشل تحميل التطبيقات."; }
+            } catch(e) { container.innerHTML = "<div style='color:var(--danger); text-align:center;'>❌ فشل تحميل البيانات.</div>"; }
         }
 
         function renderApps() {
             const container = document.getElementById('appsContainer');
             container.innerHTML = '';
+            if (currentApps.length === 0) {
+                container.innerHTML = "<div style='text-align:center; color:gray;'>لا توجد تطبيقات مرفوعة حالياً.</div>";
+                return;
+            }
             currentApps.forEach((app, index) => {
                 container.innerHTML += `
                     <div class="app-item">
                         <img src="${app.iconUrl}" onerror="this.src='https://via.placeholder.com/50'">
                         <div class="app-info">
-                            <strong>${app.name}</strong><br>
-                            <small style="color:gray">${app.bundleId}</small>
+                            <strong>${app.name}</strong>
+                            <small>${app.bundleId}</small>
                         </div>
-                        <div>
-                            <button class="btn-secondary" style="width:auto; padding:8px 15px;" onclick="editApp(${index})">تعديل</button>
-                            <button class="btn-danger" style="width:auto; padding:8px 15px;" onclick="deleteApp(${index})">حذف</button>
+                        <div class="app-actions">
+                            <button class="btn-secondary" onclick="editApp(${index})">تعديل</button>
+                            <button class="btn-danger" onclick="deleteApp(${index})">حذف</button>
                         </div>
                     </div>
                 `;
@@ -167,7 +269,7 @@
         }
 
         function deleteApp(index) {
-            if(!confirm("هل أنت متأكد من حذف التطبيق نهائياً من المتجر؟")) return;
+            if(!confirm("هل أنت متأكد من حذف التطبيق نهائياً؟")) return;
             currentApps.splice(index, 1);
             saveApps("تم الحذف بنجاح!");
         }
@@ -176,16 +278,16 @@
             const newName = prompt("تعديل اسم التطبيق:", currentApps[index].name);
             if(newName) {
                 currentApps[index].name = newName;
-                saveApps("تم التعديل بنجاح!");
+                saveApps("تم تعديل الاسم!");
             }
         }
 
         async function saveApps(successMsg) {
             const pass = document.getElementById('managePassword').value;
             const status = document.getElementById('manageStatus');
-            if(!pass) { status.style.color="var(--danger)"; status.innerText="⚠️ أدخل كلمة المرور لتأكيد التغيير"; return; }
+            if(!pass) { status.style.color="var(--danger)"; status.innerText="⚠️ أدخل كلمة المرور للتأكيد"; return; }
             
-            status.style.color = "var(--text)"; status.innerText = "جاري حفظ التعديلات...";
+            status.style.color = "var(--text)"; status.innerText = "جاري الحفظ...";
             try {
                 const res = await fetch('/api/manage', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -193,7 +295,7 @@
                 });
                 if(res.ok) {
                     status.style.color = "var(--primary)"; status.innerText = `✅ ${successMsg}`;
-                    loadApps(); // إعادة التحميل لجلب الـ SHA الجديد
+                    loadApps(); 
                 } else throw new Error("كلمة المرور خطأ أو فشل الحفظ");
             } catch(e) {
                 status.style.color = "var(--danger)"; status.innerText = `❌ ${e.message}`;
