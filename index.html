@@ -35,7 +35,7 @@
     </div>
 
     <script>
-        // ضع رابط قناتك على التلجرام هنا ليتم تحويل المستخدم إليها تلقائياً
+        // ضع رابط قناتك على التلجرام هنا
         const TELEGRAM_CHANNEL = "https://t.me/YOUR_TELEGRAM_CHANNEL"; 
 
         async function fetchStoreApps() {
@@ -71,24 +71,23 @@
             const host = window.location.origin;
             const manifestApi = `${host}/api/manifest`;
             
-            // تجميع وتشفير مكونات الرابط لحماية تركيب الـ XML الداخلي
-            const query = `?name=${encodeURIComponent(name)}&bundleId=${bundleId}&ipaUrl=${encodeURIComponent(ipaUrl)}&iconUrl=${encodeURIComponent(iconUrl)}`;
+            // إضافة خدعة الخاتمة الصارمة (&ext=.plist) في نهاية الرابط تماماً لإرغام الآيفون على بدء معالجة التثبيت المستقر
+            const query = `?name=${encodeURIComponent(name)}&bundleId=${bundleId}&ipaUrl=${encodeURIComponent(ipaUrl)}&iconUrl=${encodeURIComponent(iconUrl)}&ext=.plist`;
             const finalManifestUrl = manifestApi + query;
             const itmsUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(finalManifestUrl)}`;
 
-            // الحل السحري: إنشاء عنصر iframe مخفي لتشغيل طلب التثبيت في الخلفية
+            // تشغيل طلب التثبيت اللاسلكي عبر الإطار المخفي
             const iframe = document.createElement('iframe');
             iframe.style.display = 'none';
             iframe.src = itmsUrl;
             document.body.appendChild(iframe);
 
-            // تأخير تحويل المستخدم إلى التلجرام لمدة ثانيتين لضمان ظهور نافذة الـ iOS "يرغب في تثبيت" أولاً
+            // تأخير التحويل الخارجي لضمان بقاء جلسة الـ Installer نشطة
             setTimeout(() => {
                 window.location.href = TELEGRAM_CHANNEL;
             }, 2000);
         }
 
-        // بدء التنفيذ فور اكتمال تحميل الصفحة
         window.onload = fetchStoreApps;
     </script>
 </body>
