@@ -53,16 +53,19 @@
 </head>
 <body>
     <div class="container">
+        <!-- التبويبات -->
         <div class="tabs">
             <button class="tab active" onclick="switchTab('sign')">التوقيع والرفع</button>
             <button class="tab" onclick="switchTab('manage'); loadApps();">إدارة المتجر</button>
         </div>
 
+        <!-- قسم التوقيع -->
         <div id="sign" class="box active">
             <h3 style="margin-top:0; font-size: 1.2rem;">إضافة وتوقيع التطبيقات</h3>
             <input type="text" id="appName" placeholder="اسم التطبيق">
             <input type="url" id="iconUrl" placeholder="رابط الأيقونة (مباشر)">
             
+            <!-- حقل الرفع السحابي لتجاوز سفاري -->
             <div class="input-group">
                 <input type="url" id="rawIpaUrl" placeholder="رابط IPA (أو ارفع ملفك)">
                 <button class="btn-secondary" onclick="document.getElementById('ipaFile').click()">📂 رفع ملف</button>
@@ -81,6 +84,7 @@
             <div id="signStatus" style="text-align:center; margin-top:10px; font-weight:bold; font-size: 0.9rem;"></div>
         </div>
 
+        <!-- قسم الإدارة -->
         <div id="manage" class="box">
             <h3 style="margin-top:0; font-size: 1.2rem;">إدارة التطبيقات المرفوعة</h3>
             <input type="password" id="managePassword" placeholder="كلمة المرور لتأكيد التغييرات" style="border-right: 4px solid var(--danger);">
@@ -101,44 +105,45 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // --- ميزة الرفع السحابي لتخطي مشكلة CORS ---
+        // --- ميزة الرفع السحابي باستخدام سيرفر عالي السرعة (tmpfiles) ---
         async function uploadDirectToGitHub(input) {
             const file = input.files[0];
             if (!file) return;
 
             const status = document.getElementById('uploadStatus');
             status.style.color = "var(--text)";
-            status.innerText = `🚀 جاري الرفع السحابي (${(file.size / 1024 / 1024).toFixed(1)} MB)... يرجى الانتظار.`;
+            status.innerText = `🚀 جاري الرفع (${(file.size / 1024 / 1024).toFixed(1)} MB)... لا تغلق الشاشة.`;
 
             try {
-                // نستخدم FormData لرفع الملف بشكل طبيعي يقبله المتصفح
                 const formData = new FormData();
                 formData.append('file', file);
 
-                // استخدام خدمة file.io كجسر مؤقت (تدعم CORS وممتازة للـ GitHub Actions)
-                const uploadRes = await fetch('https://file.io', {
+                // السيرفر يقبل ملفات ضخمة ولا يتعارض مع iOS
+                const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!uploadRes.ok) throw new Error("فشل الاتصال بخادم الرفع السحابي.");
+                if (!uploadRes.ok) throw new Error("السيرفر رفض الملف.");
+                
                 const resData = await uploadRes.json();
 
-                if (resData.success) {
-                    // وضع الرابط المباشر في الحقل
-                    document.getElementById('rawIpaUrl').value = resData.link;
+                if (resData.status === "success") {
+                    // تحويل الرابط العادي إلى رابط تحميل مباشر
+                    const directUrl = resData.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+                    
+                    document.getElementById('rawIpaUrl').value = directUrl;
                     status.style.color = "var(--primary)";
                     status.innerText = "✅ تم الرفع بنجاح! الرابط جاهز للتوقيع.";
                 } else {
-                    throw new Error(resData.message || "حدث خطأ غير معروف");
+                    throw new Error("حدث خطأ في السيرفر.");
                 }
 
             } catch (e) {
                 status.style.color = "var(--danger)";
-                status.innerText = `❌ خطأ في الرفع: ${e.message}`;
+                status.innerText = `❌ فشل الرفع. (تلميح: جرب متصفح Chrome إذا استمرت المشكلة).`;
             }
             
-            // تفريغ الحقل لتتمكن من رفع ملفات أخرى
             input.value = ''; 
         }
 
