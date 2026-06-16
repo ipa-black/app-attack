@@ -1,9 +1,19 @@
-[
-  {
-    "id": "36E6E8B4-F6DA-4AF4-BE08-31F0AF294B43",
-    "name": "سينمانا",
-    "bundleId": "com.foox.cinemanaa.fixed",
-    "iconUrl": "https://up6.cc/2026/06/178079383813664.jpeg",
-    "signedIpaUrl": "https://github.com/ipa-black/app-attack/releases/download/V1/سينمانا-signed.ipa"
-  }
-]
+{
+  "settings": {
+    "siteTitle": "ATTACK STORE",
+    "viewMode": "swipe-x",
+    "categories": ["التطبيقات الأساسية"]
+  },
+  "apps": [
+    {
+      "id": "app.attackstore",
+      "appName": "ATTACK STORE",
+      "appIcon": "https://raw.githubusercontent.com/api-black/app-attack/main/icons/app.attackstore.png",
+      "bundleId": "app.attackstore",
+      "ipaUrl": "https://github.com/api-black/app-attack/releases/download/release-app.attackstore-12345678/signed.ipa",
+      "unsignedUrl": "https://example.com/raw-app.ipa",
+      "category": "التطبيقات الأساسية",
+      "isHidden": false
+    }
+  ]
+}
