@@ -3,93 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dashboard - APP ATTACK</title>
+    <title>إدارة متجر ATTACK</title>
     <style>
-        :root { --bg: #f5f5f7; --card: #ffffff; --primary: #007aff; --text: #1d1d1f; --border: #d2d2d7; --danger: #ff3b30; }
-        @media (prefers-color-scheme: dark) { :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #f5f5f7; --border: #38383a; } }
+        :root { --bg: #f2f2f7; --card: #ffffff; --primary: #007aff; --primary-hover: #005bb5; --text: #1c1c1e; --border: #e5e5ea; --danger: #ff3b30; --success: #34c759; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --primary-hover: #0060d1; --text: #f2f2f7; --border: #38383a; --danger: #ff453a; --success: #32d74b; } }
         
-        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
-        .container { max-width: 800px; margin: auto; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; line-height: 1.5; }
+        .container { max-width: 700px; margin: 0 auto; padding-bottom: 40px; }
         
-        /* تصميم التبويبات */
-        .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: var(--card); padding: 8px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .tab { flex: 1; padding: 12px; text-align: center; background: transparent; border: none; color: var(--text); font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
+        /* التبويبات */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; background: var(--card); padding: 6px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .tab { flex: 1; padding: 10px; text-align: center; background: transparent; border: none; color: var(--text); font-weight: 600; border-radius: 8px; cursor: pointer; transition: background-color 0.2s; font-size: 0.95rem; }
         .tab.active { background: var(--primary); color: white; }
         
-        .box { background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 4px 24px rgba(0,0,0,0.05); display: none; border: 1px solid var(--border); }
-        .box.active { display: block; }
+        /* الصناديق */
+        .box { background: var(--card); padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); display: none; border: 1px solid var(--border); transition: opacity 0.3s ease; }
+        .box.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
-        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 1rem; }
-        button { width: 100%; padding: 14px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; margin-bottom: 10px; font-size: 1rem; }
+        /* الحقول والأزرار */
+        input { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); color: var(--text); box-sizing: border-box; font-size: 1rem; outline: none; transition: border-color 0.2s; }
+        input:focus { border-color: var(--primary); }
+        button { width: 100%; padding: 14px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; transition: transform 0.1s, opacity 0.2s; margin-bottom: 10px; font-size: 1rem; }
+        button:active { transform: scale(0.98); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
         
         .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
         .btn-danger { background: var(--danger); color: white; }
         .btn-secondary { background: var(--border); color: var(--text); }
         
+        /* تخطيط مرن */
         .input-group { display: flex; gap: 10px; margin-bottom: 12px; }
         .input-group input { margin-bottom: 0; flex: 1; }
-        .input-group button { width: auto; min-width: 110px; margin-bottom: 0; white-space: nowrap; }
+        .input-group button { width: auto; min-width: 120px; margin-bottom: 0; }
         
-        .app-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px;}
-        .app-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg); border-radius: 14px; border: 1px solid var(--border); }
-        .app-item img { width: 50px; height: 50px; border-radius: 12px; margin-left: 12px; object-fit: cover; }
+        /* قائمة التطبيقات */
+        .app-list { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
+        .app-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: var(--bg); border-radius: 12px; border: 1px solid var(--border); }
+        .app-item img { width: 48px; height: 48px; border-radius: 10px; margin-left: 12px; object-fit: cover; border: 1px solid var(--border); }
         .app-info { flex: 1; overflow: hidden; }
         .app-info strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1rem; }
-        .app-info small { color: gray; font-size: 0.8rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .app-actions { display: flex; flex-direction: column; gap: 5px; }
-        .app-actions button { padding: 8px 12px; margin: 0; font-size: 0.85rem; border-radius: 8px; }
+        .app-info small { color: gray; font-size: 0.85rem; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .app-actions { display: flex; gap: 8px; }
+        .app-actions button { padding: 8px 16px; margin: 0; font-size: 0.85rem; border-radius: 8px; width: auto; }
 
-        .queue-list { margin-bottom: 15px; padding: 12px; background: var(--bg); border-radius: 12px; font-size: 0.9em; line-height: 1.5; border: 1px dashed var(--border); }
+        .queue-list { margin-bottom: 15px; padding: 12px; background: var(--bg); border-radius: 10px; font-size: 0.9em; border: 1px dashed var(--primary); display: none; }
+        .queue-list.active { display: block; }
+        .status-msg { text-align: center; margin-top: 10px; font-weight: bold; font-size: 0.9rem; min-height: 20px; }
 
-        /* تعديلات الهواتف */
         @media (max-width: 600px) {
             .input-group { flex-direction: column; } 
             .input-group button { width: 100%; }
-            .box { padding: 15px; }
-            .app-actions { flex-direction: row; } 
-            .app-actions button { flex: 1; text-align: center; }
+            .app-actions { flex-direction: column; } 
+            .app-actions button { width: 100%; text-align: center; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- التبويبات -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab('sign')">التوقيع والرفع</button>
+            <button class="tab active" onclick="switchTab('sign')">توقيع وإضافة</button>
             <button class="tab" onclick="switchTab('manage'); loadApps();">إدارة المتجر</button>
         </div>
 
-        <!-- قسم التوقيع -->
         <div id="sign" class="box active">
-            <h3 style="margin-top:0; font-size: 1.2rem;">إضافة وتوقيع التطبيقات</h3>
-            <input type="text" id="appName" placeholder="اسم التطبيق">
-            <input type="url" id="iconUrl" placeholder="رابط الأيقونة (مباشر)">
+            <h3 style="margin-top:0; font-size: 1.2rem;">تجهيز التطبيق الجديد</h3>
             
-            <!-- حقل الرفع السحابي لتجاوز سفاري -->
+            <input type="text" id="appName" placeholder="اسم التطبيق (مثال: سينمانا)" required>
+            <input type="url" id="iconUrl" placeholder="رابط الأيقونة المباشر (ينتهي بـ .png أو .jpg)" required>
+            
             <div class="input-group">
-                <input type="url" id="rawIpaUrl" placeholder="رابط IPA (أو ارفع ملفك)">
-                <button class="btn-secondary" onclick="document.getElementById('ipaFile').click()">📂 رفع ملف</button>
-                <input type="file" id="ipaFile" accept=".ipa" style="display: none;" onchange="uploadDirectToGitHub(this)">
+                <input type="url" id="rawIpaUrl" placeholder="رابط ملف الـ IPA المباشر">
+                <button class="btn-secondary" onclick="document.getElementById('ipaFile').click()" id="uploadBtn">📂 رفع من الجهاز</button>
+                <input type="file" id="ipaFile" accept=".ipa" style="display: none;" onchange="uploadDirectToTemp(this)">
             </div>
-            <div id="uploadStatus" style="font-size: 0.85em; color: var(--primary); margin-bottom: 15px; font-weight: bold;"></div>
+            <div id="uploadStatus" class="status-msg" style="color: var(--primary);"></div>
 
-            <input type="text" id="bundleId" placeholder="البندل آيدي (اتركه فارغاً للاستخراج العشوائي)">
+            <input type="text" id="bundleId" placeholder="البندل آيدي (اختياري - اتركه لتوليد بندل مكرر)">
             
-            <div class="queue-list" id="queueList">قائمة الانتظار: لا يوجد تطبيقات</div>
+            <div class="queue-list" id="queueList"></div>
             
-            <button class="btn-secondary" onclick="addToQueue()">+ إضافة للقائمة (للتوقيع المتعدد)</button>
+            <button class="btn-secondary" onclick="addToQueue()" id="queueBtn">+ إضافة لقائمة الانتظار</button>
             
-            <input type="password" id="adminPassword" placeholder="كلمة المرور الإدارية" style="border-right: 4px solid var(--danger);">
-            <button class="btn-primary" onclick="startProcessing()" id="processBtn">توقيع وإرسال الآن</button>
-            <div id="signStatus" style="text-align:center; margin-top:10px; font-weight:bold; font-size: 0.9rem;"></div>
+            <hr style="border: 0; height: 1px; background: var(--border); margin: 20px 0;">
+            
+            <input type="password" id="adminPassword" placeholder="كلمة المرور الإدارية" style="border-right: 4px solid var(--danger);" required>
+            <button class="btn-primary" onclick="startProcessing()" id="processBtn">🚀 بدء التوقيع والنشر</button>
+            <div id="signStatus" class="status-msg"></div>
         </div>
 
-        <!-- قسم الإدارة -->
         <div id="manage" class="box">
-            <h3 style="margin-top:0; font-size: 1.2rem;">إدارة التطبيقات المرفوعة</h3>
-            <input type="password" id="managePassword" placeholder="كلمة المرور لتأكيد التغييرات" style="border-right: 4px solid var(--danger);">
-            <div id="manageStatus" style="text-align:center; margin-bottom:10px; font-weight:bold; font-size: 0.9rem;"></div>
-            <div class="app-list" id="appsContainer">جاري التحميل...</div>
+            <h3 style="margin-top:0; font-size: 1.2rem;">التطبيقات المنشورة</h3>
+            <input type="password" id="managePassword" placeholder="كلمة المرور لتأكيد التعديلات" style="border-right: 4px solid var(--danger);">
+            <div id="manageStatus" class="status-msg"></div>
+            <div class="app-list" id="appsContainer">
+                <div style="text-align:center; color: gray;">يرجى الانتظار، جاري المزامنة...</div>
+            </div>
         </div>
     </div>
 
@@ -98,6 +108,9 @@
         let currentApps = [];
         let currentSha = '';
 
+        // تنظيف الروابط من المسافات المخفية
+        const cleanUrl = (url) => url.replace(/\s+/g, '').trim();
+
         function switchTab(tabId) {
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.box').forEach(b => b.classList.remove('active'));
@@ -105,57 +118,71 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // --- ميزة الرفع السحابي باستخدام سيرفر عالي السرعة (tmpfiles) ---
-        async function uploadDirectToGitHub(input) {
+        // الرفع السحابي الآمن والمستقر
+        async function uploadDirectToTemp(input) {
             const file = input.files[0];
             if (!file) return;
 
             const status = document.getElementById('uploadStatus');
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (!file.name.toLowerCase().endsWith('.ipa')) {
+                status.style.color = "var(--danger)";
+                status.innerText = "❌ يرجى اختيار ملف بصيغة IPA فقط.";
+                return;
+            }
+
             status.style.color = "var(--text)";
-            status.innerText = `🚀 جاري الرفع (${(file.size / 1024 / 1024).toFixed(1)} MB)... لا تغلق الشاشة.`;
+            status.innerText = `⏳ جاري الرفع (${(file.size / 1024 / 1024).toFixed(1)} MB)... لا تغلق الشاشة.`;
+            uploadBtn.disabled = true;
 
             try {
                 const formData = new FormData();
                 formData.append('file', file);
 
-                // السيرفر يقبل ملفات ضخمة ولا يتعارض مع iOS
                 const uploadRes = await fetch('https://tmpfiles.org/api/v1/upload', {
                     method: 'POST',
                     body: formData
                 });
 
-                if (!uploadRes.ok) throw new Error("السيرفر رفض الملف.");
-                
+                if (!uploadRes.ok) throw new Error("السيرفر رفض الاتصال، حاول مجدداً.");
                 const resData = await uploadRes.json();
 
                 if (resData.status === "success") {
-                    // تحويل الرابط العادي إلى رابط تحميل مباشر
                     const directUrl = resData.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-                    
                     document.getElementById('rawIpaUrl').value = directUrl;
-                    status.style.color = "var(--primary)";
-                    status.innerText = "✅ تم الرفع بنجاح! الرابط جاهز للتوقيع.";
+                    status.style.color = "var(--success)";
+                    status.innerText = "✅ اكتمل الرفع! الرابط جاهز للاستخدام.";
                 } else {
-                    throw new Error("حدث خطأ في السيرفر.");
+                    throw new Error("خطأ داخلي في سيرفر الرفع.");
                 }
-
             } catch (e) {
                 status.style.color = "var(--danger)";
-                status.innerText = `❌ فشل الرفع. (تلميح: جرب متصفح Chrome إذا استمرت المشكلة).`;
+                status.innerText = `❌ ${e.message}`;
+            } finally {
+                uploadBtn.disabled = false;
+                input.value = ''; 
             }
-            
-            input.value = ''; 
         }
 
-        // --- وظائف التوقيع المتعدد ---
         function addToQueue() {
+            const rawName = document.getElementById('appName').value.trim();
+            const rawIcon = document.getElementById('iconUrl').value;
+            const rawIpa = document.getElementById('rawIpaUrl').value;
+            const rawBundle = document.getElementById('bundleId').value;
+
+            if(!rawName || !rawIpa) {
+                alert("⚠️ اسم التطبيق ورابط ملف الـ IPA إلزاميان.");
+                return;
+            }
+
             const app = {
-                name: document.getElementById('appName').value.trim(),
-                iconUrl: document.getElementById('iconUrl').value.replace(/\s+/g, ''),
-                rawIpaUrl: document.getElementById('rawIpaUrl').value.replace(/\s+/g, ''),
-                bundleId: document.getElementById('bundleId').value.replace(/\s+/g, '')
+                name: rawName,
+                iconUrl: cleanUrl(rawIcon) || 'https://via.placeholder.com/150',
+                rawIpaUrl: cleanUrl(rawIpa),
+                bundleId: cleanUrl(rawBundle)
             };
-            if(!app.name || !app.rawIpaUrl) return alert("الاسم ورابط IPA مطلوبان!");
+
             appQueue.push(app);
             
             document.getElementById('appName').value = '';
@@ -163,75 +190,114 @@
             document.getElementById('rawIpaUrl').value = '';
             document.getElementById('bundleId').value = '';
             document.getElementById('uploadStatus').innerText = '';
+            
             updateQueueUI();
         }
 
         function updateQueueUI() {
             const qList = document.getElementById('queueList');
-            if(appQueue.length === 0) qList.innerHTML = "قائمة الانتظار: لا يوجد تطبيقات";
-            else qList.innerHTML = `قائمة الانتظار: ${appQueue.length} تطبيقات جاهزة.<br>` + appQueue.map(a => `• ${a.name}`).join('<br>');
+            if(appQueue.length === 0) {
+                qList.classList.remove('active');
+                qList.innerHTML = "";
+            } else {
+                qList.classList.add('active');
+                qList.innerHTML = `<strong>قائمة الانتظار (${appQueue.length}):</strong><br>` + 
+                                  appQueue.map((a, i) => `• ${a.name} <span style="color:var(--danger);cursor:pointer;float:left;" onclick="removeFromQueue(${i})">✖</span>`).join('<br>');
+            }
+        }
+
+        function removeFromQueue(index) {
+            appQueue.splice(index, 1);
+            updateQueueUI();
         }
 
         async function startProcessing() {
             const pass = document.getElementById('adminPassword').value;
             const status = document.getElementById('signStatus');
             const btn = document.getElementById('processBtn');
+            const queueBtn = document.getElementById('queueBtn');
             
-            if(appQueue.length === 0) {
-                if(document.getElementById('appName').value) addToQueue();
-                else return alert("لا يوجد تطبيقات للإرسال!");
+            // إضافة التطبيق الحالي للقائمة إذا لم يتم إضافته يدوياً
+            if(document.getElementById('appName').value && document.getElementById('rawIpaUrl').value) {
+                addToQueue();
             }
-            if(!pass) return alert("يرجى إدخال كلمة المرور الإدارية!");
+
+            if(appQueue.length === 0) {
+                status.style.color = "var(--danger)";
+                status.innerText = "⚠️ لا توجد تطبيقات للإرسال.";
+                return;
+            }
+            if(!pass) {
+                status.style.color = "var(--danger)";
+                status.innerText = "⚠️ كلمة المرور الإدارية مطلوبة للتوقيع.";
+                return;
+            }
 
             btn.disabled = true;
+            queueBtn.disabled = true;
+
             for(let i=0; i<appQueue.length; i++) {
                 status.style.color = "var(--text)";
-                status.innerText = `جاري إرسال ${appQueue[i].name} (${i+1}/${appQueue.length})...`;
+                status.innerText = `⚙️ جاري معالجة وإرسال: ${appQueue[i].name} (${i+1}/${appQueue.length})...`;
+                
                 try {
                     const res = await fetch('/api/admin', {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        method: 'POST', 
+                        headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify({...appQueue[i], password: pass})
                     });
-                    if(!res.ok) throw new Error("حدث خطأ");
+                    
+                    if(res.status === 401) throw new Error("كلمة المرور غير صحيحة.");
+                    if(!res.ok) throw new Error("فشل الاتصال بخوادم GitHub.");
+                    
                 } catch(e) {
                     status.style.color = "var(--danger)";
-                    status.innerText = `❌ فشل إرسال ${appQueue[i].name}`;
-                    btn.disabled = false; return;
+                    status.innerText = `❌ فشل إرسال (${appQueue[i].name}): ${e.message}`;
+                    btn.disabled = false; 
+                    queueBtn.disabled = false;
+                    return; // إيقاف العملية إذا فشل أحد التطبيقات
                 }
             }
-            status.style.color = "var(--primary)";
-            status.innerText = "✅ تمت الإضافة للتوقيع بنجاح!";
-            appQueue = []; updateQueueUI();
+            
+            status.style.color = "var(--success)";
+            status.innerText = "✅ تمت الإضافة لخط التوقيع بنجاح! راقب GitHub Actions.";
+            appQueue = []; 
+            updateQueueUI();
             btn.disabled = false;
+            queueBtn.disabled = false;
+            document.getElementById('adminPassword').value = '';
         }
 
-        // --- وظائف إدارة التطبيقات ---
+        // --- إدارة المتجر ---
         async function loadApps() {
             const container = document.getElementById('appsContainer');
-            container.innerHTML = "<div style='text-align:center;'>جاري جلب التطبيقات... ⏳</div>";
+            container.innerHTML = "<div style='text-align:center;'>جاري جلب بيانات المتجر... ⏳</div>";
             try {
                 const res = await fetch('/api/manage');
+                if(!res.ok) throw new Error("فشل جلب البيانات");
                 const data = await res.json();
                 currentApps = data.apps || [];
                 currentSha = data.sha;
                 renderApps();
-            } catch(e) { container.innerHTML = "<div style='color:var(--danger); text-align:center;'>❌ فشل تحميل البيانات.</div>"; }
+            } catch(e) { 
+                container.innerHTML = `<div style='color:var(--danger); text-align:center;'>❌ تعذر تحميل البيانات، تأكد من ملف Store.json</div>`; 
+            }
         }
 
         function renderApps() {
             const container = document.getElementById('appsContainer');
             container.innerHTML = '';
             if (currentApps.length === 0) {
-                container.innerHTML = "<div style='text-align:center; color:gray;'>لا توجد تطبيقات مرفوعة حالياً.</div>";
+                container.innerHTML = "<div style='text-align:center; color:gray; padding: 20px;'>لا توجد تطبيقات في المتجر حالياً.</div>";
                 return;
             }
             currentApps.forEach((app, index) => {
                 container.innerHTML += `
                     <div class="app-item">
-                        <img src="${app.iconUrl}" onerror="this.src='https://via.placeholder.com/50'">
+                        <img src="${app.iconUrl}" onerror="this.src='https://via.placeholder.com/48'">
                         <div class="app-info">
                             <strong>${app.name}</strong>
-                            <small>${app.bundleId}</small>
+                            <small>${app.bundleId || 'غير متوفر'}</small>
                         </div>
                         <div class="app-actions">
                             <button class="btn-secondary" onclick="editApp(${index})">تعديل</button>
@@ -243,36 +309,51 @@
         }
 
         function deleteApp(index) {
-            if(!confirm("هل أنت متأكد من حذف التطبيق نهائياً؟")) return;
+            if(!confirm(`هل أنت متأكد من حذف "${currentApps[index].name}" نهائياً من المتجر؟`)) return;
             currentApps.splice(index, 1);
             saveApps("تم الحذف بنجاح!");
         }
 
         function editApp(index) {
-            const newName = prompt("تعديل اسم التطبيق:", currentApps[index].name);
-            if(newName) {
-                currentApps[index].name = newName;
-                saveApps("تم تعديل الاسم!");
+            const newName = prompt("أدخل الاسم الجديد للتطبيق:", currentApps[index].name);
+            if(newName && newName.trim() !== "") {
+                currentApps[index].name = newName.trim();
+                saveApps("تم تعديل الاسم بنجاح!");
             }
         }
 
         async function saveApps(successMsg) {
             const pass = document.getElementById('managePassword').value;
             const status = document.getElementById('manageStatus');
-            if(!pass) { status.style.color="var(--danger)"; status.innerText="⚠️ أدخل كلمة المرور للتأكيد"; return; }
             
-            status.style.color = "var(--text)"; status.innerText = "جاري الحفظ...";
+            if(!pass) { 
+                status.style.color = "var(--danger)"; 
+                status.innerText = "⚠️ يجب إدخال كلمة المرور في الأعلى لتأكيد التعديل."; 
+                return; 
+            }
+            
+            status.style.color = "var(--text)"; 
+            status.innerText = "⏳ جاري حفظ التعديلات في GitHub...";
+            
             try {
                 const res = await fetch('/api/manage', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ apps: currentApps, sha: currentSha, password: pass })
                 });
+                
                 if(res.ok) {
-                    status.style.color = "var(--primary)"; status.innerText = `✅ ${successMsg}`;
-                    loadApps(); 
-                } else throw new Error("كلمة المرور خطأ أو فشل الحفظ");
+                    status.style.color = "var(--success)"; 
+                    status.innerText = `✅ ${successMsg}`;
+                    document.getElementById('managePassword').value = '';
+                    loadApps(); // تحديث القائمة بعد الحفظ
+                } else {
+                    const errorMsg = await res.json();
+                    throw new Error(errorMsg.error || "فشل الحفظ");
+                }
             } catch(e) {
-                status.style.color = "var(--danger)"; status.innerText = `❌ ${e.message}`;
+                status.style.color = "var(--danger)"; 
+                status.innerText = `❌ خطأ: كلمة المرور غير صحيحة أو فقدان الاتصال.`;
             }
         }
     </script>
