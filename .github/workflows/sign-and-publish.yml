@@ -1,89 +1,106 @@
-name: Auto Sign & Publish App
-
+name: Auto Sign and Release
 on:
-  repository_dispatch:
-    types: [publish_new_app]
+  workflow_dispatch:
+    inputs:
+      ipa_url:
+        description: 'الرابط المباشر للملف الخام (Unsigned)'
+        required: true
+        type: string
+      category:
+        description: 'قسم التطبيق'
+        required: true
+        type: string
 
 jobs:
-  process-app:
+  build-and-sign:
     runs-on: macos-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout Code
+      - name: سحب ملفات المستودع
         uses: actions/checkout@v3
 
-      - name: Install Dependencies
+      - name: تهيئة بيئة العمل وقاعدة البيانات
         run: |
-          brew install zsign
-          brew install jq
+          mkdir -p icons
+          # تهيئة ملف store.json إذا لم يكن موجوداً لتجنب أخطاء jq
+          if [ ! -f store.json ]; then
+            echo '{"settings": {"siteTitle": "ATTACK STORE", "viewMode": "swipe-x", "categories": ["التطبيقات الأساسية"]}, "apps": []}' > store.json
+          fi
 
-      - name: Download Raw IPA
-        env:
-          RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
-        run: |
-          CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
-          curl -L -o app-raw.ipa "$CLEAN_URL"
+      - name: تنزيل ملف الـ IPA الخام
+        run: curl -L "${{ inputs.ipa_url }}" -o unsigned.ipa
 
-      - name: Prepare Bundle ID
-        id: bundle_magic
-        env:
-          PROVIDED_BUNDLE: ${{ github.event.client_payload.bundleId }}
+      - name: استخراج بيانات التطبيق (بدون أخطاء مسافات)
+        id: extract
         run: |
-          # فك ضغط مؤقت لقراءة البندل الأصلي بدقة
-          unzip -q app-raw.ipa -d temp_dir
-          ORIGINAL_BUNDLE=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" temp_dir/Payload/*.app/Info.plist)
-          rm -rf temp_dir
+          mkdir -p extracted_app
+          unzip -q unsigned.ipa -d extracted_app
           
-          # إذا ترك المستخدم حقل البندل فارغاً، يتم استخدام البندل الأصلي للحفاظ على استقرار الشهادة
-          if [ -z "$PROVIDED_BUNDLE" ]; then
-            FINAL_BUNDLE="$ORIGINAL_BUNDLE"
-          else
-            FINAL_BUNDLE="$PROVIDED_BUNDLE"
+          # استخدام find بدلاً من ls لتجنب أخطاء المسافات في أسماء الملفات
+          APP_DIR=$(find extracted_app/Payload -type d -name "*.app" | head -n 1)
+          PLIST_PATH="$APP_DIR/Info.plist"
+          
+          # استخراج البندل والاسم مع توفير قيمة افتراضية صالحة (app.attackstore) لتجنب توقف السكربت إذا فشلت القراءة
+          BUNDLE_ID=$(/usr/libexec/PlistBuddy -c "Print :CFBundleIdentifier" "$PLIST_PATH" 2>/dev/null || echo "app.attackstore")
+          APP_NAME=$(/usr/libexec/PlistBuddy -c "Print :CFBundleDisplayName" "$PLIST_PATH" 2>/dev/null || /usr/libexec/PlistBuddy -c "Print :CFBundleName" "$PLIST_PATH" 2>/dev/null || echo "Unknown App")
+          
+          # البحث عن الأيقونة وتجنب أخطاء النسخ (cp) إذا لم توجد أيقونة
+          ICON_SOURCE=$(find "$APP_DIR" -name "*AppIcon*.png" | sort -r | head -n 1)
+          if [ -z "$ICON_SOURCE" ]; then
+            ICON_SOURCE=$(find "$APP_DIR" -name "*.png" -size +10k | sort -r | head -n 1)
           fi
           
-          echo "BUNDLE_ID=$FINAL_BUNDLE" >> $GITHUB_ENV
-
-      - name: Sign IPA with zsign
-        env:
-          APP_NAME: ${{ github.event.client_payload.name }}
-          RAW_URL: ${{ github.event.client_payload.rawIpaUrl }}
-        run: |
-          SAFE_NAME=$(echo "$APP_NAME" | tr -d ' ')
+          if [ -n "$ICON_SOURCE" ]; then
+            cp "$ICON_SOURCE" "icons/$BUNDLE_ID.png"
+          else
+            touch "icons/$BUNDLE_ID.png"
+          fi
           
-          # التوقيع الذكي وتغيير البندل لكل الإضافات (Extensions) دفعة واحدة
-          zsign -k certs/cert.p12 -p "AppleP12.com" -m certs/profile.mobileprovision -b "$BUNDLE_ID" app-raw.ipa -o "${SAFE_NAME}-signed.ipa"
+          echo "BUNDLE_ID=$BUNDLE_ID" >> $GITHUB_ENV
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+      - name: توقيع التطبيق باستخدام zsign
+        run: |
+          brew install zsign
+          # تأكد من وضع كلمة السر الفعلية لشهادتك هنا
+          CERT_PASS="كلمة_السر_الخاصة_بالشهادة"
+          zsign -k certificates/cert.p12 -p "$CERT_PASS" -m certificates/prov.mobileprovision unsigned.ipa -o signed.ipa
+
+      - name: رفع التطبيق الموقّع إلى قسم الإصدارات (Releases)
+        uses: softprops/action-gh-release@v1
+        with:
+          files: signed.ipa
+          tag_name: release-${{ env.BUNDLE_ID }}-${{ github.run_id }}
+          name: "تحديث: ${{ env.APP_NAME }}"
+          body: "تم التوقيع التلقائي بنجاح."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: تحديث قاعدة البيانات (store.json) بالرابط المباشر
+        run: |
+          # استخدام github.repository لجعل السكربت ديناميكياً 100%
+          ICON_URL="https://raw.githubusercontent.com/${{ github.repository }}/main/icons/${{ env.BUNDLE_ID }}.png"
+          SIGNED_IPA_URL="https://github.com/${{ github.repository }}/releases/download/release-${{ env.BUNDLE_ID }}-${{ github.run_id }}/signed.ipa"
           
-          CLEAN_URL=$(echo "$RAW_URL" | tr -d '[:space:]' | tr -d '"' | tr -d "'")
-          TAG=$(echo "$CLEAN_URL" | grep -o 'download/[^/]*' | cut -d'/' -f2)
-          [ -z "$TAG" ] && TAG="v1.0"
-          echo "TAG=$TAG" >> $GITHUB_ENV
-          echo "SAFE_NAME=$SAFE_NAME" >> $GITHUB_ENV
+          # التعديل الآمن على الجيسون باستخدام jq
+          jq --arg id "${{ env.BUNDLE_ID }}" \
+             --arg name "${{ env.APP_NAME }}" \
+             --arg icon "$ICON_URL" \
+             --arg bundle "${{ env.BUNDLE_ID }}" \
+             --arg ipa "$SIGNED_IPA_URL" \
+             --arg unsigned "${{ inputs.ipa_url }}" \
+             --arg cat "${{ inputs.category }}" \
+             '.apps |= (map(select(.bundleId != $bundle)) + [{ "id": $id, "appName": $name, "appIcon": $icon, "bundleId": $bundle, "ipaUrl": $ipa, "unsignedUrl": $unsigned, "category": $cat, "isHidden": false }])' store.json > tmp.json && mv tmp.json store.json
 
-      - name: Upload Signed IPA to Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: حفظ التغييرات في المستودع
         run: |
-          gh release create "$TAG" --title "Release $TAG" --notes "Signed Apps" || true
-          gh release upload "$TAG" "${SAFE_NAME}-signed.ipa" --clobber
-          SIGNED_URL="https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/${SAFE_NAME}-signed.ipa"
-          echo "SIGNED_URL=$SIGNED_URL" >> $GITHUB_ENV
-
-      - name: Update Store.json database
-        env:
-          APP_NAME: ${{ github.event.client_payload.name }}
-          ICON_URL: ${{ github.event.client_payload.iconUrl }}
-        run: |
-          NEW_ID=$(uuidgen)
-          jq --arg id "$NEW_ID" --arg name "$APP_NAME" --arg bundle "$BUNDLE_ID" --arg icon "$ICON_URL" --arg url "$SIGNED_URL" \
-             '. += [{"id": $id, "name": $name, "bundleId": $bundle, "iconUrl": $icon, "signedIpaUrl": $url}]' \
-             Store.json > tmp.json && mv tmp.json Store.json
-
-      - name: Commit and Push
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git add Store.json
-          git commit -m "Update Store: $APP_NAME"
+          # استخدام البريد الرسمي لبوت جيت هاب لتجنب تعارض الصلاحيات
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add icons/ store.json
+          
+          # إضافة (|| echo) لمنع فشل سير العمل إذا لم يكن هناك أي تغيير في الملفات
+          git commit -m "تحديث: إضافة تطبيق ${{ env.APP_NAME }} لقاعدة البيانات" || echo "لا توجد تعديلات جديدة لحفظها"
           git push
