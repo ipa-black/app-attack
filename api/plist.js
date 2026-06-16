@@ -1,6 +1,29 @@
 export default function handler(req, res) {
     const { name, bundleId, version, ipaUrl, iconUrl } = req.query;
-    if (!ipaUrl || !bundleId || !name) return res.status(400).send('بيانات غير مكتملة');
+
+    if (!ipaUrl || !bundleId || !name) {
+        return res.status(400).send('بيانات غير مكتملة');
+    }
+
+    // دالة حاسمة: تقوم بتشفير الرموز التي تكسر ملفات الـ XML في الآيفون
+    const escapeXml = (unsafe) => {
+        if (!unsafe) return '';
+        return unsafe.replace(/[<>&'"]/g, c => {
+            switch (c) {
+                case '<': return '&lt;';
+                case '>': return '&gt;';
+                case '&': return '&amp;';
+                case '\'': return '&apos;';
+                case '"': return '&quot;';
+                default: return c;
+            }
+        });
+    };
+
+    const safeName = escapeXml(name);
+    const safeBundleId = escapeXml(bundleId);
+    const safeIpaUrl = escapeXml(ipaUrl);
+    const safeIconUrl = escapeXml(iconUrl || 'https://via.placeholder.com/150');
 
     const plistXML = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -15,7 +38,7 @@ export default function handler(req, res) {
                     <key>kind</key>
                     <string>software-package</string>
                     <key>url</key>
-                    <string>${ipaUrl}</string>
+                    <string>${safeIpaUrl}</string>
                 </dict>
                 <dict>
                     <key>kind</key>
@@ -23,26 +46,26 @@ export default function handler(req, res) {
                     <key>needs-shine</key>
                     <false/>
                     <key>url</key>
-                    <string>${iconUrl || 'https://via.placeholder.com/150'}</string>
+                    <string>${safeIconUrl}</string>
                 </dict>
             </array>
             <key>metadata</key>
             <dict>
                 <key>bundle-identifier</key>
-                <string>${bundleId}</string>
+                <string>${safeBundleId}</string>
                 <key>bundle-version</key>
-                <string>${version || '1.0'}</string>
+                <string>${escapeXml(version) || '1.0'}</string>
                 <key>kind</key>
                 <string>software</string>
                 <key>title</key>
-                <string>${name}</string>
+                <string>${safeName}</string>
             </dict>
         </dict>
     </array>
 </dict>
 </plist>`;
 
-    res.setHeader('Content-Type', 'application/x-apple-aspen-manifest');
-    res.setHeader('Content-Disposition', `inline; filename="${name}.plist"`);
+    // تم تغيير النوع إلى text/xml لضمان قراءته بشكل صحيح في كل إصدارات iOS
+    res.setHeader('Content-Type', 'text/xml; charset=utf-8');
     res.status(200).send(plistXML);
 }
