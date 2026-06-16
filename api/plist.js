@@ -2,10 +2,10 @@ export default function handler(req, res) {
     const { name, bundleId, version, ipaUrl, iconUrl } = req.query;
 
     if (!ipaUrl || !bundleId || !name) {
-        return res.status(400).send('بيانات غير مكتملة');
+        return res.status(400).send('بيانات التطبيق غير مكتملة');
     }
 
-    // دالة حاسمة: تقوم بتشفير الرموز التي تكسر ملفات الـ XML في الآيفون
+    // دالة حاسمة لتشفير الرموز الخاصة التي تسبب خلل "تعذر تثبيت التطبيق"
     const escapeXml = (unsafe) => {
         if (!unsafe) return '';
         return unsafe.replace(/[<>&'"]/g, c => {
@@ -65,7 +65,7 @@ export default function handler(req, res) {
 </dict>
 </plist>`;
 
-    // تم تغيير النوع إلى text/xml لضمان قراءته بشكل صحيح في كل إصدارات iOS
+    // إرسال الملف بتنسيق text/xml صريح ومفهوم لنظام iOS
     res.setHeader('Content-Type', 'text/xml; charset=utf-8');
     res.status(200).send(plistXML);
 }
