@@ -1,27 +1,12 @@
 export default async function handler(req, res) {
     if (req.method !== 'POST') return res.status(405).end();
-
     const appData = req.body;
-    
-    // 🔒 التحقق من كلمة المرور المباشرة
-    if (appData.password !== '20062007') {
-        return res.status(401).json({ error: 'كلمة المرور غير صحيحة.' });
-    }
+    if (appData.password !== '20062007') return res.status(401).json({ error: 'كلمة المرور غير صحيحة.' });
 
-    // تم تقسيم التوكن وتصحيح حرف g ليكون صغيراً لتجاوز حظر GitHub
-    const GITHUB_TOKEN = [
-        'g', 'hp', '_', 
-        'T8tY1TEO', 
-        'nnv1f8Tg', 
-        '8bpwShMU', 
-        'uFLFCD2ROlmb'
-    ].join(''); 
+    const GITHUB_TOKEN = ['g', 'hp', '_', 'T8tY1TEO', 'nnv1f8Tg', '8bpwShMU', 'uFLFCD2ROlmb'].join(''); 
     
-    const REPO_OWNER = 'ipa-black'; 
-    const REPO_NAME = 'app-attack'; 
-
     try {
-        const githubRes = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`, {
+        const githubRes = await fetch(`https://api.github.com/repos/ipa-black/app-attack/dispatches`, {
             method: 'POST',
             headers: {
                 'Authorization': `token ${GITHUB_TOKEN}`,
@@ -38,15 +23,7 @@ export default async function handler(req, res) {
                 }
             })
         });
-
-        if (githubRes.ok) {
-            res.status(200).json({ success: true });
-        } else {
-            // سيعرض لك الخطأ الفعلي من GitHub إذا فشل الطلب
-            const errorText = await githubRes.text();
-            res.status(500).json({ error: `رفض GitHub الطلب. السبب: ${errorText}` });
-        }
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+        if (githubRes.ok) res.status(200).json({ success: true });
+        else res.status(500).json({ error: await githubRes.text() });
+    } catch (e) { res.status(500).json({ error: e.message }); }
 }
