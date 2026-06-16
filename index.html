@@ -2,134 +2,94 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APP ATTACK</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ATTACK STORE</title>
     <style>
-        /* الستايل الخاص بك (بدون تغيير) */
-        :root {
-            --bg-color: #e6f2ed;
-            --card-bg: #ffffff;
-            --primary-color: #10b981;
-            --text-color: #0f291e;
-            --title-color: #0a1f16;
-            --shadow-color: rgba(16, 185, 129, 0.25);
-            --border-color: #bfe3d5;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #0a1410;
-                --card-bg: #11241c;
-                --primary-color: #00ff88;
-                --text-color: #e0ffe8;
-                --title-color: #00ff88;
-                --shadow-color: rgba(0, 255, 136, 0.15);
-                --border-color: #1c3a2d;
-            }
-        }
-
-        body {
-            margin: 0; font-family: system-ui, -apple-system, sans-serif;
-            background-color: var(--bg-color); color: var(--text-color);
-            transition: background-color 0.3s, color 0.3s;
-        }
-
-        header { text-align: center; padding: 3rem 0 1rem 0; }
-        header h1 {
-            font-size: 2.8rem; font-weight: 900; margin: 0;
-            color: var(--title-color); letter-spacing: 3px; text-transform: uppercase;
-            text-shadow: 0 0 20px var(--shadow-color);
-        }
-
-        .slider-container {
-            display: flex; overflow-x: auto; gap: 2.5rem; padding: 2rem;
-            scroll-snap-type: x mandatory; scrollbar-width: none;
-        }
-        .slider-container::-webkit-scrollbar { display: none; }
-
-        .app-card {
-            flex: 0 0 auto; width: 260px; height: 380px;
-            background-color: var(--card-bg); border-radius: 130px;
-            box-shadow: 0 15px 35px var(--shadow-color);
-            display: flex; flex-direction: column; align-items: center;
-            justify-content: space-between; padding: 2rem 1rem;
-            scroll-snap-align: center; transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid var(--border-color);
-        }
-        .app-card:hover {
-            transform: translateY(-10px); box-shadow: 0 20px 45px var(--shadow-color);
-        }
-
-        .app-card img {
-            width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
-            box-shadow: 0 8px 25px var(--shadow-color); margin-top: 10px;
-            border: 3px solid var(--primary-color);
-        }
-
-        .app-card h2 { font-size: 1.3rem; margin: 0; text-align: center; font-weight: 800; }
-
-        .app-card button {
-            background-color: var(--primary-color); color: #000;
-            border: none; padding: 1rem 2.5rem; border-radius: 50px;
-            font-size: 1.1rem; font-weight: 900; cursor: pointer;
-            transition: all 0.2s; margin-bottom: 10px;
-            box-shadow: 0 5px 20px var(--shadow-color); text-transform: uppercase;
-        }
-        .app-card button:active { transform: scale(0.95); }
+        :root { --bg: #f2f2f7; --card: #ffffff; --primary: #007aff; --text: #1c1c1e; --border: #e5e5ea; }
+        @media (prefers-color-scheme: dark) { :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #f2f2f7; --border: #38383a; } }
+        
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; direction: rtl; -webkit-tap-highlight-color: transparent; }
+        .header { background: var(--card); padding: 20px 15px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; text-align: center; box-shadow: 0 1px 5px rgba(0,0,0,0.03); }
+        .header h1 { margin: 0; font-size: 1.4rem; font-weight: 700; }
+        
+        .container { max-width: 650px; margin: 0 auto; padding: 15px; }
+        .app-card { background: var(--card); display: flex; align-items: center; padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid var(--border); box-shadow: 0 2px 12px rgba(0,0,0,0.02); }
+        .app-icon { width: 60px; height: 60px; border-radius: 14px; object-fit: cover; margin-left: 15px; border: 1px solid var(--border); }
+        .app-details { flex: 1; overflow: hidden; }
+        .app-details h2 { margin: 0; font-size: 1.1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-details p { margin: 4px 0 0 0; color: gray; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .btn-install { background: var(--primary); color: white; border: none; padding: 8px 18px; font-weight: bold; border-radius: 20px; cursor: pointer; font-size: 0.9rem; transition: transform 0.1s; }
+        .btn-install:active { transform: scale(0.95); }
+        .loading { text-align: center; color: gray; padding: 40px 0; font-weight: 500; }
     </style>
 </head>
 <body>
-    <header><h1>APP ATTACK</h1></header>
-    <main>
-        <div id="apps-slider" class="slider-container">
-            <div style="width: 100%; text-align: center; font-weight: bold; color: var(--primary-color);">جاري تحميل التطبيقات...</div>
-        </div>
-    </main>
+
+    <div class="header">
+        <h1>الرئيسية</h1>
+    </div>
+
+    <div class="container">
+        <div id="storeApps" class="loading">جاري مزامنة التطبيقات المتاحة... ⏳</div>
+    </div>
 
     <script>
-        const STORE_JSON_URL = 'Store.json'; 
+        // ضع رابط قناتك على التلجرام هنا ليتم تحويل المستخدم إليها تلقائياً
+        const TELEGRAM_CHANNEL = "https://t.me/YOUR_TELEGRAM_CHANNEL"; 
 
-        async function loadApps() {
+        async function fetchStoreApps() {
+            const container = document.getElementById('storeApps');
             try {
-                const response = await fetch(`${STORE_JSON_URL}?t=${new Date().getTime()}`);
-                if (!response.ok) throw new Error('فشل تحميل البيانات');
-                const apps = await response.json();
-                const slider = document.getElementById('apps-slider');
-                slider.innerHTML = ''; 
+                const res = await fetch('/api/manage');
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const apps = data.apps || [];
+                
+                if (apps.length === 0) {
+                    container.innerHTML = "<div style='text-align:center;color:gray;padding:20px;'>لا توجد تطبيقات متوفرة حالياً في المتجر.</div>";
+                    return;
+                }
 
-                apps.forEach(app => {
-                    const card = document.createElement('div');
-                    card.className = 'app-card';
-                    
-                    // 1. بناء الرابط الخاص بـ Vercel
-                    const vercelApiUrl = `${window.location.origin}/api/plist?name=${encodeURIComponent(app.name)}&bundleId=${encodeURIComponent(app.bundleId)}&version=${encodeURIComponent(app.version || '1.0')}&ipaUrl=${encodeURIComponent(app.signedIpaUrl)}&iconUrl=${encodeURIComponent(app.iconUrl)}&ext=.plist`;
+                container.innerHTML = apps.map(app => `
+                    <div class="app-card">
+                        <img class="app-icon" src="${app.iconUrl}" onerror="this.src='https://via.placeholder.com/60'">
+                        <div class="app-details">
+                            <h2>${app.name}</h2>
+                            <p>${app.bundleId}</p>
+                        </div>
+                        <button class="btn-install" onclick="executeInstallation('${app.name}', '${app.bundleId}', '${app.signedIpaUrl}', '${app.iconUrl}')">تثبيت</button>
+                    </div>
+                `).join('');
 
-                    // 2. السر هنا: تشفير الرابط بأكمله مرة أخرى حتى لا يعتبر متصفح الآيفون علامات (&) جزءاً من بروتوكول التثبيت
-                    const fullyEncodedUrl = encodeURIComponent(vercelApiUrl);
-
-                    card.innerHTML = `
-                        <img src="${app.iconUrl}" alt="صورة ${app.name}" loading="lazy">
-                        <h2>${app.name}</h2>
-                        <button onclick="installApp('${fullyEncodedUrl}')">تنزيل</button>
-                    `;
-                    slider.appendChild(card);
-                });
-            } catch (error) {
-                document.getElementById('apps-slider').innerHTML = '<div style="text-align: center; width: 100%; color: red;">تعذر تحميل التطبيقات.</div>';
+            } catch {
+                container.innerHTML = "<div style='text-align:center;color:var(--primary);padding:20px;'>❌ تعذر جلب تطبيقات المتجر حالياً.</div>";
             }
         }
 
-        window.installApp = function(encodedPlistUrl) {
-            // توجيه المتصفح المباشر لطلب التثبيت (بدون iframe)
-            window.location.href = `itms-services://?action=download-manifest&url=${encodedPlistUrl}`;
+        function executeInstallation(name, bundleId, ipaUrl, iconUrl) {
+            const host = window.location.origin;
+            const manifestApi = `${host}/api/manifest`;
             
-            // تأخير 900 ملي ثانية قبل الانتقال للتليجرام
-            setTimeout(() => { 
-                window.location.href = "https://t.me/hl00ss"; 
-            }, 900);
-        };
+            // تجميع وتشفير مكونات الرابط لحماية تركيب الـ XML الداخلي
+            const query = `?name=${encodeURIComponent(name)}&bundleId=${bundleId}&ipaUrl=${encodeURIComponent(ipaUrl)}&iconUrl=${encodeURIComponent(iconUrl)}`;
+            const finalManifestUrl = manifestApi + query;
+            const itmsUrl = `itms-services://?action=download-manifest&url=${encodeURIComponent(finalManifestUrl)}`;
 
-        document.addEventListener('DOMContentLoaded', loadApps);
+            // الحل السحري: إنشاء عنصر iframe مخفي لتشغيل طلب التثبيت في الخلفية
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = itmsUrl;
+            document.body.appendChild(iframe);
+
+            // تأخير تحويل المستخدم إلى التلجرام لمدة ثانيتين لضمان ظهور نافذة الـ iOS "يرغب في تثبيت" أولاً
+            setTimeout(() => {
+                window.location.href = TELEGRAM_CHANNEL;
+            }, 2000);
+        }
+
+        // بدء التنفيذ فور اكتمال تحميل الصفحة
+        window.onload = fetchStoreApps;
     </script>
 </body>
 </html>
