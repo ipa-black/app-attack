@@ -11,7 +11,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 15px; }
         .container { max-width: 800px; margin: auto; }
         
-        /* تصميم التبويبات للهواتف */
+        /* تصميم التبويبات */
         .tabs { display: flex; gap: 8px; margin-bottom: 15px; background: var(--card); padding: 8px; border-radius: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .tab { flex: 1; padding: 12px; text-align: center; background: transparent; border: none; color: var(--text); font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 0.95rem; }
         .tab.active { background: var(--primary); color: white; }
@@ -41,12 +41,12 @@
 
         .queue-list { margin-bottom: 15px; padding: 12px; background: var(--bg); border-radius: 12px; font-size: 0.9em; line-height: 1.5; border: 1px dashed var(--border); }
 
-        /* تعديلات مخصصة لشاشات الهواتف */
+        /* تعديلات الهواتف */
         @media (max-width: 600px) {
-            .input-group { flex-direction: column; } /* جعل زر الرفع أسفل الحقل في الهاتف */
+            .input-group { flex-direction: column; } 
             .input-group button { width: 100%; }
             .box { padding: 15px; }
-            .app-actions { flex-direction: row; } /* جعل أزرار التعديل والحذف بجانب بعضها */
+            .app-actions { flex-direction: row; } 
             .app-actions button { flex: 1; text-align: center; }
         }
     </style>
@@ -70,13 +70,13 @@
             </div>
             <div id="uploadStatus" style="font-size: 0.85em; color: var(--primary); margin-bottom: 15px; font-weight: bold;"></div>
 
-            <input type="text" id="bundleId" placeholder="البندل آيدي (اتركه فارغاً للاستخراج)">
+            <input type="text" id="bundleId" placeholder="البندل آيدي (اتركه فارغاً للاستخراج العشوائي)">
             
             <div class="queue-list" id="queueList">قائمة الانتظار: لا يوجد تطبيقات</div>
             
             <button class="btn-secondary" onclick="addToQueue()">+ إضافة للقائمة (للتوقيع المتعدد)</button>
             
-            <input type="password" id="adminPassword" placeholder="كلمة المرور (مطلوبة للرفع والتوقيع)" style="border-right: 4px solid var(--danger);">
+            <input type="password" id="adminPassword" placeholder="كلمة المرور الإدارية" style="border-right: 4px solid var(--danger);">
             <button class="btn-primary" onclick="startProcessing()" id="processBtn">توقيع وإرسال الآن</button>
             <div id="signStatus" style="text-align:center; margin-top:10px; font-weight:bold; font-size: 0.9rem;"></div>
         </div>
@@ -101,75 +101,44 @@
             document.getElementById(tabId).classList.add('active');
         }
 
-        // --- ميزة الرفع المباشر إلى GitHub Releases ---
+        // --- ميزة الرفع السحابي لتخطي مشكلة CORS ---
         async function uploadDirectToGitHub(input) {
             const file = input.files[0];
             if (!file) return;
 
-            const pass = document.getElementById('adminPassword').value;
             const status = document.getElementById('uploadStatus');
-            
-            if (!pass) {
-                alert("⚠️ يرجى إدخال كلمة المرور الإدارية في الأسفل أولاً ليتمكن النظام من رفع الملف!");
-                input.value = ''; return;
-            }
-
             status.style.color = "var(--text)";
-            status.innerText = "⏳ جاري تهيئة الاتصال السحابي...";
+            status.innerText = `🚀 جاري الرفع السحابي (${(file.size / 1024 / 1024).toFixed(1)} MB)... يرجى الانتظار.`;
 
             try {
-                // جلب التوكن
-                const tokenRes = await fetch('/api/get-token', {
-                    method: 'POST', headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ password: pass })
-                });
-                if (!tokenRes.ok) throw new Error("كلمة المرور الإدارية غير صحيحة.");
-                const { token } = await tokenRes.json();
+                // نستخدم FormData لرفع الملف بشكل طبيعي يقبله المتصفح
+                const formData = new FormData();
+                formData.append('file', file);
 
-                // التحقق من وجود قسم الإصدارات (Release) المخصص للملفات الخام
-                status.innerText = "⏳ جاري إعداد مساحة GitHub Releases...";
-                const tag = 'raw-uploads'; 
-                const releaseRes = await fetch('https://api.github.com/repos/ipa-black/app-attack/releases/tags/' + tag, {
-                    headers: { 'Authorization': `token ${token}` }
-                });
-                
-                let releaseId;
-                if (releaseRes.ok) {
-                    releaseId = (await releaseRes.json()).id;
-                } else {
-                    const newRelease = await fetch('https://api.github.com/repos/ipa-black/app-attack/releases', {
-                        method: 'POST',
-                        headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ tag_name: tag, name: "Raw App Uploads", draft: false })
-                    });
-                    releaseId = (await newRelease.json()).id;
-                }
-
-                // الرفع لـ GitHub Releases
-                status.innerText = `🚀 جاري الرفع (${(file.size / 1024 / 1024).toFixed(1)} MB)... لا تغلق الصفحة.`;
-                const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_'); 
-                
-                const uploadRes = await fetch(`https://uploads.github.com/repos/ipa-black/app-attack/releases/${releaseId}/assets?name=${cleanFileName}`, {
+                // استخدام خدمة file.io كجسر مؤقت (تدعم CORS وممتازة للـ GitHub Actions)
+                const uploadRes = await fetch('https://file.io', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/octet-stream'
-                    },
-                    body: file
+                    body: formData
                 });
 
-                if (!uploadRes.ok) throw new Error("فشل الرفع. قد يكون الملف كبيراً جداً أو مساحة GitHub ممتلئة.");
-                const assetData = await uploadRes.json();
+                if (!uploadRes.ok) throw new Error("فشل الاتصال بخادم الرفع السحابي.");
+                const resData = await uploadRes.json();
 
-                // لصق الرابط المباشر للملف المرفوع في الحقل
-                document.getElementById('rawIpaUrl').value = assetData.browser_download_url;
-                status.style.color = "var(--primary)";
-                status.innerText = "✅ تم الرفع لـ Releases بنجاح! جاهز للتوقيع.";
+                if (resData.success) {
+                    // وضع الرابط المباشر في الحقل
+                    document.getElementById('rawIpaUrl').value = resData.link;
+                    status.style.color = "var(--primary)";
+                    status.innerText = "✅ تم الرفع بنجاح! الرابط جاهز للتوقيع.";
+                } else {
+                    throw new Error(resData.message || "حدث خطأ غير معروف");
+                }
 
             } catch (e) {
                 status.style.color = "var(--danger)";
-                status.innerText = `❌ ${e.message}`;
+                status.innerText = `❌ خطأ في الرفع: ${e.message}`;
             }
+            
+            // تفريغ الحقل لتتمكن من رفع ملفات أخرى
             input.value = ''; 
         }
 
@@ -207,7 +176,7 @@
                 if(document.getElementById('appName').value) addToQueue();
                 else return alert("لا يوجد تطبيقات للإرسال!");
             }
-            if(!pass) return alert("يرجى إدخال كلمة المرور!");
+            if(!pass) return alert("يرجى إدخال كلمة المرور الإدارية!");
 
             btn.disabled = true;
             for(let i=0; i<appQueue.length; i++) {
