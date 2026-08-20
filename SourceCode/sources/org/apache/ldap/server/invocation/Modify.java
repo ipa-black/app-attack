@@ -1,0 +1,69 @@
+package org.apache.ldap.server.invocation;
+
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NamingException;
+import javax.naming.directory.Attributes;
+import org.apache.ldap.server.BackingStore;
+import org.apache.ldap.server.ContextPartition;
+import org.apache.ldap.server.PartitionNexus;
+import org.apache.ldap.server.db.Database;
+import org.apache.ldap.server.jndi.ProviderNexusAspect;
+/* loaded from: classes3.dex */
+public class Modify extends Invocation {
+    private static final long serialVersionUID = 3258134673732416053L;
+    private final Attributes attributes;
+    private final int modOp;
+    private Name name;
+
+    public Modify(Name name, int i, Attributes attributes) {
+        if (name == null) {
+            throw new NullPointerException("name");
+        }
+        this.name = name;
+        this.modOp = i;
+        this.attributes = attributes;
+    }
+
+    public Name getName() {
+        return this.name;
+    }
+
+    public int getModOp() {
+        return this.modOp;
+    }
+
+    public Attributes getAttributes() {
+        return this.attributes;
+    }
+
+    @Override // org.apache.ldap.server.invocation.Invocation
+    protected Object doExecute(BackingStore backingStore) throws NamingException {
+        boolean z;
+        boolean z2;
+        Name name = this.name;
+        int i = this.modOp;
+        Attributes attributes = this.attributes;
+        try {
+            if ((this instanceof Context) && !(this instanceof ContextPartition) && (backingStore instanceof PartitionNexus) && !(backingStore instanceof Database)) {
+                ProviderNexusAspect.aspectOf().ajc$before$org_apache_ldap_server_jndi_ProviderNexusAspect$1$1ba52095((Context) this);
+            }
+            backingStore.modify(name, i, attributes);
+            if (z) {
+                if (z2) {
+                    return null;
+                }
+                return null;
+            }
+            return null;
+        } finally {
+            if ((this instanceof Context) && !(this instanceof ContextPartition) && (backingStore instanceof PartitionNexus) && !(backingStore instanceof Database)) {
+                ProviderNexusAspect.aspectOf().ajc$after$org_apache_ldap_server_jndi_ProviderNexusAspect$2$1ba52095((Context) this);
+            }
+        }
+    }
+
+    public void setName(Name name) {
+        this.name = name;
+    }
+}

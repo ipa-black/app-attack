@@ -1,0 +1,16 @@
+package io.bidmachine.ads.networks.mraid;
+
+import io.bidmachine.NetworkAdapter;
+import io.bidmachine.NetworkConfig;
+/* loaded from: classes5.dex */
+public class MraidConfig extends NetworkConfig {
+    public MraidConfig() {
+        super("mraid", null);
+    }
+
+    /* JADX INFO: Access modifiers changed from: protected */
+    @Override // io.bidmachine.NetworkConfig
+    public NetworkAdapter createNetworkAdapter() {
+        return new MraidAdapter();
+    }
+}

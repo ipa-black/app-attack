@@ -1,0 +1,49 @@
+.class final Lcom/bytedance/sdk/openadsdk/hm/Qhi/cJ$1;
+.super Ljava/lang/Object;
+.source "DoInterstitialWebViewCloseMethod.java"
+
+# interfaces
+.implements Lcom/bytedance/sdk/component/Qhi/fl$cJ;
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingMethod;
+    value = Lcom/bytedance/sdk/openadsdk/hm/Qhi/cJ;->Qhi(Lcom/bytedance/sdk/component/Qhi/kYc;Lcom/bytedance/sdk/openadsdk/core/NFd;)V
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x8
+    name = null
+.end annotation
+
+
+# instance fields
+.field final synthetic Qhi:Lcom/bytedance/sdk/openadsdk/core/NFd;
+
+
+# direct methods
+.method constructor <init>(Lcom/bytedance/sdk/openadsdk/core/NFd;)V
+    .locals 0
+
+    .line 24
+    iput-object p1, p0, Lcom/bytedance/sdk/openadsdk/hm/Qhi/cJ$1;->Qhi:Lcom/bytedance/sdk/openadsdk/core/NFd;
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public Qhi()Lcom/bytedance/sdk/component/Qhi/fl;
+    .locals 2
+
+    .line 27
+    new-instance v0, Lcom/bytedance/sdk/openadsdk/hm/Qhi/cJ;
+
+    iget-object v1, p0, Lcom/bytedance/sdk/openadsdk/hm/Qhi/cJ$1;->Qhi:Lcom/bytedance/sdk/openadsdk/core/NFd;
+
+    invoke-direct {v0, v1}, Lcom/bytedance/sdk/openadsdk/hm/Qhi/cJ;-><init>(Lcom/bytedance/sdk/openadsdk/core/NFd;)V
+
+    return-object v0
+.end method

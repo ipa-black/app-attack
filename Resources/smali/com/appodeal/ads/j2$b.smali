@@ -1,0 +1,64 @@
+.class public final Lcom/appodeal/ads/j2$b;
+.super Ljava/lang/Object;
+.source "SourceFile"
+
+# interfaces
+.implements Lcom/appodeal/ads/unified/UnifiedMrecParams;
+
+
+# annotations
+.annotation system Ldalvik/annotation/EnclosingClass;
+    value = Lcom/appodeal/ads/j2;
+.end annotation
+
+.annotation system Ldalvik/annotation/InnerClass;
+    accessFlags = 0x19
+    name = "b"
+.end annotation
+
+
+# direct methods
+.method public constructor <init>()V
+    .locals 0
+
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+
+# virtual methods
+.method public final obtainPlacementId()Ljava/lang/String;
+    .locals 1
+
+    invoke-static {}, Lcom/appodeal/ads/h2;->a()Lcom/appodeal/ads/h2$b;
+
+    move-result-object v0
+
+    .line 1
+    iget-object v0, v0, Lcom/appodeal/ads/u;->l:Lcom/appodeal/ads/segments/g;
+
+    invoke-static {v0}, Lcom/appodeal/ads/segments/g;->a(Lcom/appodeal/ads/segments/g;)Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method
+
+.method public final obtainSegmentId()Ljava/lang/String;
+    .locals 1
+
+    invoke-static {}, Lcom/appodeal/ads/h2;->a()Lcom/appodeal/ads/h2$b;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/appodeal/ads/u;->r()Ljava/lang/Long;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Ljava/lang/Long;->toString()Ljava/lang/String;
+
+    move-result-object v0
+
+    return-object v0
+.end method

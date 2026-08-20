@@ -1,0 +1,15 @@
+package org.apache.commons.collections.set;
+
+import java.util.Set;
+import org.apache.commons.collections.collection.AbstractCollectionDecorator;
+/* loaded from: classes5.dex */
+public abstract class AbstractSetDecorator extends AbstractCollectionDecorator implements Set {
+    /* JADX INFO: Access modifiers changed from: protected */
+    public AbstractSetDecorator(Set set) {
+        super(set);
+    }
+
+    protected Set getSet() {
+        return (Set) getCollection();
+    }
+}

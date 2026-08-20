@@ -1,0 +1,16 @@
+package com.facebook.ads.redexgen.X;
+
+import android.graphics.Rect;
+import android.view.View;
+/* renamed from: com.facebook.ads.redexgen.X.4W  reason: invalid class name */
+/* loaded from: assets/audience_network.dex */
+public abstract class C4W {
+    @Deprecated
+    private final void A00(Rect rect, int i, E9 e9) {
+        rect.set(0, 0, 0, 0);
+    }
+
+    public final void A01(Rect rect, View view, E9 e9, C05064o c05064o) {
+        A00(rect, ((C04934a) view.getLayoutParams()).A00(), e9);
+    }
+}

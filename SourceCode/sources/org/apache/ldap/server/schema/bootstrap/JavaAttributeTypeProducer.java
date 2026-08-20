@@ -1,0 +1,115 @@
+package org.apache.ldap.server.schema.bootstrap;
+
+import java.util.ArrayList;
+import javax.naming.NamingException;
+import org.apache.ldap.common.schema.UsageEnum;
+import org.apache.ldap.server.jndi.JavaLdapSupport;
+import org.apache.ldap.server.schema.bootstrap.AbstractBootstrapProducer;
+/* loaded from: classes3.dex */
+public class JavaAttributeTypeProducer extends AbstractBootstrapProducer {
+    public JavaAttributeTypeProducer() {
+        super(ProducerTypeEnum.ATTRIBUTE_TYPE_PRODUCER);
+    }
+
+    @Override // org.apache.ldap.server.schema.bootstrap.BootstrapProducer
+    public void produce(BootstrapRegistries bootstrapRegistries, ProducerCallback producerCallback) throws NamingException {
+        ArrayList arrayList = new ArrayList();
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.6", bootstrapRegistries);
+        newAttributeType.setDescription("Fully qualified name of distinguished Java class or interface");
+        newAttributeType.setCanUserModify(true);
+        newAttributeType.setSingleValue(true);
+        newAttributeType.setCollective(false);
+        newAttributeType.setObsolete(false);
+        newAttributeType.setLength(-1);
+        newAttributeType.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType.setEqualityId("caseExactMatch");
+        newAttributeType.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.15");
+        arrayList.clear();
+        arrayList.add(JavaLdapSupport.JCLASSNAME_ATTR);
+        newAttributeType.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.6", newAttributeType);
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType2 = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.10", bootstrapRegistries);
+        newAttributeType2.setDescription("Fully qualified Java class name of a JNDI object factory");
+        newAttributeType2.setCanUserModify(true);
+        newAttributeType2.setSingleValue(true);
+        newAttributeType2.setCollective(false);
+        newAttributeType2.setObsolete(false);
+        newAttributeType2.setLength(-1);
+        newAttributeType2.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType2.setEqualityId("caseExactMatch");
+        newAttributeType2.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.15");
+        arrayList.clear();
+        arrayList.add("javaFactory");
+        newAttributeType2.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.10", newAttributeType2);
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType3 = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.7", bootstrapRegistries);
+        newAttributeType3.setDescription("URL(s) specifying the location of class definition");
+        newAttributeType3.setCanUserModify(true);
+        newAttributeType3.setSingleValue(false);
+        newAttributeType3.setCollective(false);
+        newAttributeType3.setObsolete(false);
+        newAttributeType3.setLength(-1);
+        newAttributeType3.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType3.setEqualityId("caseExactIA5Match");
+        newAttributeType3.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.26");
+        arrayList.clear();
+        arrayList.add("javaCodebase");
+        newAttributeType3.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.7", newAttributeType3);
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType4 = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.12", bootstrapRegistries);
+        newAttributeType4.setDescription("The Java documentation for the class");
+        newAttributeType4.setCanUserModify(true);
+        newAttributeType4.setSingleValue(false);
+        newAttributeType4.setCollective(false);
+        newAttributeType4.setObsolete(false);
+        newAttributeType4.setLength(-1);
+        newAttributeType4.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType4.setEqualityId("caseExactIA5Match");
+        newAttributeType4.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.26");
+        arrayList.clear();
+        arrayList.add("javaDoc");
+        newAttributeType4.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.12", newAttributeType4);
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType5 = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.11", bootstrapRegistries);
+        newAttributeType5.setDescription("Addresses associated with a JNDI Reference");
+        newAttributeType5.setCanUserModify(true);
+        newAttributeType5.setSingleValue(false);
+        newAttributeType5.setCollective(false);
+        newAttributeType5.setObsolete(false);
+        newAttributeType5.setLength(-1);
+        newAttributeType5.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType5.setEqualityId("caseExactMatch");
+        newAttributeType5.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.15");
+        arrayList.clear();
+        arrayList.add("javaReferenceAddress");
+        newAttributeType5.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.11", newAttributeType5);
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType6 = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.8", bootstrapRegistries);
+        newAttributeType6.setDescription("Serialized form of a Java object");
+        newAttributeType6.setCanUserModify(true);
+        newAttributeType6.setSingleValue(true);
+        newAttributeType6.setCollective(false);
+        newAttributeType6.setObsolete(false);
+        newAttributeType6.setLength(-1);
+        newAttributeType6.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType6.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.40");
+        arrayList.clear();
+        arrayList.add(JavaLdapSupport.JSERIALDATA_ATTR);
+        newAttributeType6.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.8", newAttributeType6);
+        AbstractBootstrapProducer.BootstrapAttributeType newAttributeType7 = AbstractBootstrapProducer.newAttributeType("1.3.6.1.4.1.42.2.27.4.1.13", bootstrapRegistries);
+        newAttributeType7.setDescription("Fully qualified Java class or interface name");
+        newAttributeType7.setCanUserModify(true);
+        newAttributeType7.setSingleValue(false);
+        newAttributeType7.setCollective(false);
+        newAttributeType7.setObsolete(false);
+        newAttributeType7.setLength(-1);
+        newAttributeType7.setUsage(UsageEnum.getUsage("userApplications"));
+        newAttributeType7.setEqualityId("caseExactMatch");
+        newAttributeType7.setSyntaxId("1.3.6.1.4.1.1466.115.121.1.15");
+        arrayList.clear();
+        arrayList.add(JavaLdapSupport.JCLASSNAMES_ATTR);
+        newAttributeType7.setNames((String[]) arrayList.toArray(AbstractBootstrapProducer.EMPTY));
+        producerCallback.schemaObjectProduced(this, "1.3.6.1.4.1.42.2.27.4.1.13", newAttributeType7);
+    }
+}

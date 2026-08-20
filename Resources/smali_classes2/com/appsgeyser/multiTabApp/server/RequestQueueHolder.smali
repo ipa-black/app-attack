@@ -1,0 +1,145 @@
+.class public Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+.super Ljava/lang/Object;
+.source "RequestQueueHolder.java"
+
+
+# static fields
+.field private static volatile _ready:Z = false
+
+.field private static deferredUrls:Ljava/util/ArrayList;
+    .annotation system Ldalvik/annotation/Signature;
+        value = {
+            "Ljava/util/ArrayList<",
+            "Ljava/lang/String;",
+            ">;"
+        }
+    .end annotation
+.end field
+
+.field private static instance:Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+
+
+# instance fields
+.field private _queue:Lcom/android/volley/RequestQueue;
+
+
+# direct methods
+.method static constructor <clinit>()V
+    .locals 0
+
+    return-void
+.end method
+
+.method private constructor <init>(Landroid/content/Context;)V
+    .locals 1
+
+    .line 43
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    const/4 v0, 0x0
+
+    .line 37
+    iput-object v0, p0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->_queue:Lcom/android/volley/RequestQueue;
+
+    .line 44
+    invoke-static {p1}, Lcom/android/volley/toolbox/Volley;->newRequestQueue(Landroid/content/Context;)Lcom/android/volley/RequestQueue;
+
+    move-result-object p1
+
+    iput-object p1, p0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->_queue:Lcom/android/volley/RequestQueue;
+
+    const/4 p1, 0x1
+
+    .line 45
+    sput-boolean p1, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->_ready:Z
+
+    return-void
+.end method
+
+.method public static addUrl(Ljava/lang/String;)V
+    .locals 3
+
+    .line 26
+    sget-object v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->instance:Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+
+    if-nez v0, :cond_1
+
+    .line 27
+    sget-object v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->deferredUrls:Ljava/util/ArrayList;
+
+    if-nez v0, :cond_0
+
+    .line 28
+    new-instance v0, Ljava/util/ArrayList;
+
+    invoke-direct {v0}, Ljava/util/ArrayList;-><init>()V
+
+    sput-object v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->deferredUrls:Ljava/util/ArrayList;
+
+    .line 30
+    :cond_0
+    sget-object v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->deferredUrls:Ljava/util/ArrayList;
+
+    invoke-virtual {v0, p0}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+
+    goto :goto_0
+
+    .line 32
+    :cond_1
+    invoke-virtual {v0}, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->getQueue()Lcom/android/volley/RequestQueue;
+
+    move-result-object v0
+
+    new-instance v1, Lcom/android/volley/toolbox/StringRequest;
+
+    const/4 v2, 0x0
+
+    invoke-direct {v1, p0, v2, v2}, Lcom/android/volley/toolbox/StringRequest;-><init>(Ljava/lang/String;Lcom/android/volley/Response$Listener;Lcom/android/volley/Response$ErrorListener;)V
+
+    invoke-virtual {v0, v1}, Lcom/android/volley/RequestQueue;->add(Lcom/android/volley/Request;)Lcom/android/volley/Request;
+
+    :goto_0
+    return-void
+.end method
+
+.method public static getInstance(Landroid/content/Context;)Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+    .locals 1
+
+    .line 18
+    sget-object v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->instance:Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+
+    if-nez v0, :cond_0
+
+    .line 19
+    new-instance v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+
+    invoke-direct {v0, p0}, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;-><init>(Landroid/content/Context;)V
+
+    sput-object v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->instance:Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+
+    .line 22
+    :cond_0
+    sget-object p0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->instance:Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;
+
+    return-object p0
+.end method
+
+.method public static ready()Z
+    .locals 1
+
+    .line 49
+    sget-boolean v0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->_ready:Z
+
+    return v0
+.end method
+
+
+# virtual methods
+.method public getQueue()Lcom/android/volley/RequestQueue;
+    .locals 1
+
+    .line 40
+    iget-object v0, p0, Lcom/appsgeyser/multiTabApp/server/RequestQueueHolder;->_queue:Lcom/android/volley/RequestQueue;
+
+    return-object v0
+.end method

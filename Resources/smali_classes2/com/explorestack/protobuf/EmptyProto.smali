@@ -1,0 +1,99 @@
+.class public final Lcom/explorestack/protobuf/EmptyProto;
+.super Ljava/lang/Object;
+.source "EmptyProto.java"
+
+
+# static fields
+.field private static descriptor:Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+
+.field static final internal_static_google_protobuf_Empty_descriptor:Lcom/explorestack/protobuf/Descriptors$Descriptor;
+
+.field static final internal_static_google_protobuf_Empty_fieldAccessorTable:Lcom/explorestack/protobuf/GeneratedMessageV3$FieldAccessorTable;
+
+
+# direct methods
+.method static constructor <clinit>()V
+    .locals 3
+
+    const/4 v0, 0x1
+
+    .line 30
+    new-array v0, v0, [Ljava/lang/String;
+
+    const-string v1, "\n\u001bgoogle/protobuf/empty.proto\u0012\u000fgoogle.protobuf\"\u0007\n\u0005EmptyB}\n\u0013com.google.protobufB\nEmptyProtoP\u0001Z.google.golang.org/protobuf/types/known/emptypb\u00f8\u0001\u0001\u00a2\u0002\u0003GPB\u00aa\u0002\u001eGoogle.Protobuf.WellKnownTypesb\u0006proto3"
+
+    const/4 v2, 0x0
+
+    aput-object v1, v0, v2
+
+    .line 37
+    new-array v1, v2, [Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+
+    .line 38
+    invoke-static {v0, v1}, Lcom/explorestack/protobuf/Descriptors$FileDescriptor;->internalBuildGeneratedFileFrom([Ljava/lang/String;[Lcom/explorestack/protobuf/Descriptors$FileDescriptor;)Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+
+    move-result-object v0
+
+    sput-object v0, Lcom/explorestack/protobuf/EmptyProto;->descriptor:Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+
+    .line 42
+    invoke-static {}, Lcom/explorestack/protobuf/EmptyProto;->getDescriptor()Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+
+    move-result-object v0
+
+    invoke-virtual {v0}, Lcom/explorestack/protobuf/Descriptors$FileDescriptor;->getMessageTypes()Ljava/util/List;
+
+    move-result-object v0
+
+    invoke-interface {v0, v2}, Ljava/util/List;->get(I)Ljava/lang/Object;
+
+    move-result-object v0
+
+    check-cast v0, Lcom/explorestack/protobuf/Descriptors$Descriptor;
+
+    sput-object v0, Lcom/explorestack/protobuf/EmptyProto;->internal_static_google_protobuf_Empty_descriptor:Lcom/explorestack/protobuf/Descriptors$Descriptor;
+
+    .line 43
+    new-instance v1, Lcom/explorestack/protobuf/GeneratedMessageV3$FieldAccessorTable;
+
+    new-array v2, v2, [Ljava/lang/String;
+
+    invoke-direct {v1, v0, v2}, Lcom/explorestack/protobuf/GeneratedMessageV3$FieldAccessorTable;-><init>(Lcom/explorestack/protobuf/Descriptors$Descriptor;[Ljava/lang/String;)V
+
+    sput-object v1, Lcom/explorestack/protobuf/EmptyProto;->internal_static_google_protobuf_Empty_fieldAccessorTable:Lcom/explorestack/protobuf/GeneratedMessageV3$FieldAccessorTable;
+
+    return-void
+.end method
+
+.method private constructor <init>()V
+    .locals 0
+
+    .line 7
+    invoke-direct {p0}, Ljava/lang/Object;-><init>()V
+
+    return-void
+.end method
+
+.method public static getDescriptor()Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+    .locals 1
+
+    .line 25
+    sget-object v0, Lcom/explorestack/protobuf/EmptyProto;->descriptor:Lcom/explorestack/protobuf/Descriptors$FileDescriptor;
+
+    return-object v0
+.end method
+
+.method public static registerAllExtensions(Lcom/explorestack/protobuf/ExtensionRegistry;)V
+    .locals 0
+
+    .line 14
+    invoke-static {p0}, Lcom/explorestack/protobuf/EmptyProto;->registerAllExtensions(Lcom/explorestack/protobuf/ExtensionRegistryLite;)V
+
+    return-void
+.end method
+
+.method public static registerAllExtensions(Lcom/explorestack/protobuf/ExtensionRegistryLite;)V
+    .locals 0
+
+    return-void
+.end method

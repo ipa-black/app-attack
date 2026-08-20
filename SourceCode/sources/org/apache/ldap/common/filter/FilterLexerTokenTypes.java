@@ -1,0 +1,47 @@
+package org.apache.ldap.common.filter;
+/* loaded from: classes3.dex */
+public interface FilterLexerTokenTypes {
+    public static final int ALPHA = 37;
+    public static final int AMPERSAND = 11;
+    public static final int AMPERSTAND = 30;
+    public static final int APPROX = 33;
+    public static final int ASTERISK = 12;
+    public static final int ATTRIBUTEDESCRIPTION = 44;
+    public static final int COLON = 15;
+    public static final int COLONEQUALS = 32;
+    public static final int DESCR = 40;
+    public static final int DIGIT = 4;
+    public static final int DN = 31;
+    public static final int EOF = 1;
+    public static final int EQUALS = 29;
+    public static final int ESC = 18;
+    public static final int ESCAPED = 8;
+    public static final int EXCLAMATION = 10;
+    public static final int GREATEROREQUAL = 34;
+    public static final int HEXDIG = 5;
+    public static final int LANGLE = 28;
+    public static final int LDIGIT = 36;
+    public static final int LESSOREQUAL = 35;
+    public static final int LPAREN = 13;
+    public static final int NORMAL = 7;
+    public static final int NULL_TREE_LOOKAHEAD = 3;
+    public static final int NUMBER = 38;
+    public static final int NUMERICOID = 39;
+    public static final int OID = 41;
+    public static final int OPTION = 42;
+    public static final int OPTIONS = 43;
+    public static final int RANGLE = 27;
+    public static final int RPAREN = 14;
+    public static final int TILDE = 17;
+    public static final int UTF0 = 21;
+    public static final int UTF1 = 22;
+    public static final int UTF1SUBSET = 9;
+    public static final int UTF2 = 23;
+    public static final int UTF3 = 24;
+    public static final int UTF4 = 25;
+    public static final int UTF8 = 19;
+    public static final int UTFMB = 20;
+    public static final int VALUEENCODING = 6;
+    public static final int VERTBAR = 16;
+    public static final int WS = 26;
+}
