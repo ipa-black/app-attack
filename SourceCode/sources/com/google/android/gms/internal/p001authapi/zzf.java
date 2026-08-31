@@ -1,5 +1,0 @@
-package com.google.android.gms.internal.p001authapi;
-/* renamed from: com.google.android.gms.internal.auth-api.zzf  reason: invalid package */
-/* loaded from: classes4.dex */
-public interface zzf {
-}

@@ -1,9 +1,0 @@
-package com.yandex.metrica.impl.ob;
-/* renamed from: com.yandex.metrica.impl.ob.g7  reason: case insensitive filesystem */
-/* loaded from: classes5.dex */
-public enum EnumC1555g7 {
-    UNKNOWN,
-    USER,
-    BREAKPAD,
-    CRASHPAD
-}
