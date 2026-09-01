@@ -1,13 +1,15 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from curl_cffi import requests
-import re
+import json
+import html
+from bs4 import BeautifulSoup
 
 app = FastAPI()
 
 @app.api_route('/api/index', methods=["GET", "HEAD"])
 def get_fresh_ipa(uuid: str, request: Request, size: int = 0, file: str = None):
-    # 1. الدرع الواقي: إعطاء KSign الحجم فوراً لمنع حظر جهازك
+    # 1. إرضاء أداة KSign بإعطائها الحجم فوراً لمنع حظر الـ IP
     if request.method == "HEAD":
         return Response(
             status_code=200, 
@@ -15,34 +17,40 @@ def get_fresh_ipa(uuid: str, request: Request, size: int = 0, file: str = None):
             headers={"Content-Length": str(size)}
         )
 
-    # 2. انتحال شخصية جوالك: نمرر الـ IP الخاص بك ونوع المتصفح لكي لا يكتشف الموقع أننا سيرفر
-    client_ua = request.headers.get("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1")
-    client_ip = request.headers.get("x-forwarded-for", "").split(",")[0].strip() or request.client.host
-
+    # 2. إنشاء جلسة احترافية لحفظ الـ Cookies وتخطي الحماية
     session = requests.Session(impersonate="safari_ios")
-    session.headers.update({
-        "User-Agent": client_ua,
-        "X-Forwarded-For": client_ip,
-        "X-Real-IP": client_ip,
-        "Referer": f"https://check0ver.net/ar/iapps/{uuid}"
-    })
-
+    
     try:
-        # 3. الدخول إلى صفحة التطبيق في الموقع
-        app_page = session.get(f"https://check0ver.net/ar/iapps/{uuid}", timeout=15)
+        # الدخول كمتصفح حقيقي لأخذ تصريح المرور (Cookies)
+        app_url = f"https://check0ver.net/ar/iapps/{uuid}"
+        app_page = session.get(app_url, timeout=15)
         
-        # 4. تنظيف كود الصفحة لتسهيل البحث
-        clean_text = app_page.text.replace('\\/', '/')
+        real_url = None
         
-        # 5. القناص (Regex): يبحث في كود الصفحة عن أي رابط مباشر ينتهي بـ .ipa ومعه مفتاح التحميل
-        match = re.search(r'(https?://[^"\'\s]+\.ipa[^"\'\s]*)', clean_text)
+        # استخراج البيانات المخفية
+        soup = BeautifulSoup(app_page.text, 'html.parser')
+        app_div = soup.find('div', id='app')
         
-        if match:
-            fresh_url = match.group(1)
-            # 6. توجيه KSign للتحميل من السيرفر السحابي (CDN) مباشرة وبدون الدخول للموقع
-            return RedirectResponse(url=fresh_url, status_code=302)
+        if app_div and app_div.has_attr('data-page'):
+            data = json.loads(html.unescape(app_div['data-page']))
+            iapp = data.get("props", {}).get("iapp", {})
+            real_url = iapp.get("downloadURL")
+        
+        # إذا كان الرابط لا يزال محلياً، نستخدم الجلسة المصرح لها لكشف الرابط السحابي
+        if not real_url or "check0ver.net" in real_url:
+            target_dl = real_url if real_url else f"https://check0ver.net/ar/iapps/{uuid}/download"
             
-        raise HTTPException(status_code=404, detail="لم يتم العثور على رابط IPA السحابي في كود الصفحة")
+            # نطلب التحميل، والموقع سيقوم بتوجيهنا للرابط السحابي لأنه يثق في الـ Cookies الخاصة بنا
+            dl_resp = session.get(target_dl, allow_redirects=False, timeout=10)
+            
+            if dl_resp.status_code in [301, 302, 303, 307, 308]:
+                real_url = dl_resp.headers.get("Location")
+
+        if real_url:
+            # توجيه أداة KSign للرابط السحابي النهائي لبدء التحميل
+            return RedirectResponse(url=real_url, status_code=302)
+            
+        raise HTTPException(status_code=404, detail="لم نتمكن من كشف الرابط السحابي")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
