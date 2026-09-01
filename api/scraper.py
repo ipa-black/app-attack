@@ -3,6 +3,8 @@ from bs4 import BeautifulSoup
 import json
 import html
 
+VERCEL_DOMAIN = "https://app-attack.vercel.app"
+
 def fix_url(url, base_domain="check0ver.net"):
     if not url: return ""
     url = str(url).strip()
@@ -10,6 +12,26 @@ def fix_url(url, base_domain="check0ver.net"):
     if url.startswith('//'): return 'https:' + url
     if url.startswith('/'): return f'https://{base_domain}{url}'
     return f'https://{base_domain}/{url}'
+
+def convert_size_to_bytes(size_str):
+    """
+    تحويل الحجم من نص (مثلاً 169.45 MB) إلى رقم صحيح (بايت)
+    لأن أدوات التوقيع مثل KSign لا تفهم إلا لغة الأرقام الصافية.
+    """
+    if not size_str or size_str == "غير معروف":
+        return 0
+    size_str = str(size_str).upper().replace(" ", "")
+    try:
+        if "MB" in size_str:
+            return int(float(size_str.replace("MB", "")) * 1024 * 1024)
+        elif "GB" in size_str:
+            return int(float(size_str.replace("GB", "")) * 1024 * 1024 * 1024)
+        elif "KB" in size_str:
+            return int(float(size_str.replace("KB", "")) * 1024)
+        else:
+            return int(float(size_str))
+    except:
+        return 0
 
 def main():
     url = "https://check0ver.net/ar"
@@ -25,11 +47,8 @@ def main():
             app_div = soup.find('div', id='app')
             
             if app_div and app_div.has_attr('data-page'):
-                # فك تشفير وفهم بيانات JSON بالكامل
                 raw_json = html.unescape(app_div['data-page'])
                 page_data = json.loads(raw_json)
-                
-                # الدخول المباشر لمجلدات التطبيقات والأقسام
                 categories = page_data.get("props", {}).get("categoriesWithApps", [])
                 
                 if categories:
@@ -37,26 +56,26 @@ def main():
                         cat_name = category.get("name", "عام")
                         iapps = category.get("iapps", [])
                         
-                        # سحب كل تطبيق داخل القسم
                         for app in iapps:
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
+                            app_uuid = app.get("uuid")
                             
-                            # أخذ الرابط المباشر والحجم الحقيقي من المصدر
-                            download_url = app.get("downloadURL", "")
-                            size = str(app.get("size", "غير معروف"))
+                            # تحويل الحجم إلى بايت
+                            original_size = app.get("size", "0")
+                            size_in_bytes = convert_size_to_bytes(original_size)
+                            
                             icon_url = fix_url(app.get("image", ""))
                             version = str(app.get("version", "1.0"))
                             name = app.get("name", "تطبيق بدون اسم")
                             desc = app.get("description", "لا يوجد وصف")
 
-                            # إضافة التطبيق إذا كان يحتوي على رابط تحميل فقط
-                            if download_url:
+                            if app_uuid:
                                 all_apps[bundle] = {
                                     "name": name,
                                     "bundleIdentifier": bundle,
                                     "version": version,
-                                    "size": size,
-                                    "downloadURL": download_url,
+                                    "size": size_in_bytes, # الآن الحجم رقم حقيقي وليس نصاً
+                                    "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}", # عودة الرابط الذكي لتفادي 404
                                     "iconURL": icon_url,
                                     "localizedDescription": f"{desc}\n\nالقسم: {cat_name}"
                                 }
@@ -64,7 +83,6 @@ def main():
         print(f"❌ حدث خطأ أثناء الاتصال أو تحليل البيانات: {e}")
         return
 
-    # بناء ملف السورس
     repo_data = {
         "name": "ATTACK STORE Repo",
         "identifier": "com.attackstore.repo",
@@ -74,7 +92,7 @@ def main():
     with open("repo.json", "w", encoding="utf-8") as f:
         json.dump(repo_data, f, ensure_ascii=False, indent=4)
         
-    print(f"✅ تمت العملية! تم استخراج {len(all_apps)} تطبيق مع الأحجام والروابط المباشرة وتحديث السورس.")
+    print(f"✅ تمت العملية! تم استخراج {len(all_apps)} تطبيق وتحديث السورس بنجاح.")
 
 if __name__ == "__main__":
     main()
