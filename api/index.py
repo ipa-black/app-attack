@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from curl_cffi import requests
 from bs4 import BeautifulSoup
@@ -7,7 +7,6 @@ import html
 
 app = FastAPI()
 
-# معالجة الروابط لتكون جاهزة للتحميل المباشر
 def fix_url(url, base_domain="check0ver.net"):
     if not url: return url
     if url.startswith('//'): return 'https:' + url
@@ -15,16 +14,15 @@ def fix_url(url, base_domain="check0ver.net"):
     if not url.startswith('http'): return f'https://{base_domain}/' + url
     return url
 
-@app.get('/api/index')
-def get_fresh_ipa(uuid: str):
+# السر هنا: إضافة دعم GET و HEAD معاً لكي تنجح أدوات التوقيع في قراءة الملف
+@app.api_route('/api/index', methods=["GET", "HEAD"])
+def get_fresh_ipa(uuid: str, request: Request):
     if not uuid:
         raise HTTPException(status_code=400, detail="Missing UUID")
 
-    # السلاح السري: انتحال شخصية سفاري على iOS لتخطي حماية المواقع
     session = requests.Session(impersonate="safari_ios")
 
     try:
-        # الدخول السريع والمباشر لصفحة التطبيق المعني
         app_url = f"https://check0ver.net/ar/iapps/{uuid}"
         app_page = session.get(app_url, timeout=15)
         
@@ -37,7 +35,7 @@ def get_fresh_ipa(uuid: str):
             
             if fresh_url:
                 fresh_url = fix_url(fresh_url)
-                # توجيه تطبيق التوقيع للبدء بالتحميل فوراً
+                # التوجيه بالكود 302 ليعرف KSign أن الرابط انتقل لمكان آخر
                 return RedirectResponse(url=fresh_url, status_code=302)
                 
         raise HTTPException(status_code=404, detail="لم يتم العثور على الرابط الطازج")
@@ -45,7 +43,6 @@ def get_fresh_ipa(uuid: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# دالة مخصصة للبحث داخل الهيكل البرمجي
 def find_download_url(data, target_uuid):
     if isinstance(data, dict):
         if data.get("uuid") == target_uuid and "downloadURL" in data:
