@@ -4,7 +4,6 @@ import json
 import html
 import datetime
 
-# رابط سيرفرك الوسيط على Vercel
 VERCEL_DOMAIN = "https://app-attack.vercel.app"
 
 def fix_url(url, base_domain="check0ver.net"):
@@ -16,7 +15,6 @@ def fix_url(url, base_domain="check0ver.net"):
     return f'https://{base_domain}/{url}'
 
 def convert_size_to_bytes(size_str):
-    """تحويل الحجم إلى بايت لكي يقرأه تطبيق KSign بشكل صحيح"""
     if not size_str or size_str == "غير معروف":
         return 0
     size_str = str(size_str).upper().replace(" ", "")
@@ -59,7 +57,6 @@ def main():
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
                             app_uuid = app.get("uuid")
                             
-                            # تخطي التطبيق إذا لم يكن يحتوي على معرف UUID
                             if not app_uuid:
                                 continue
                             
@@ -71,21 +68,21 @@ def main():
                             desc = app.get("description", "لا يوجد وصف")
                             date = app.get("updatedAt", datetime.datetime.utcnow().isoformat() + "Z")
 
-                            # إضافة التطبيق وتوجيه التحميل إلى سيرفر Vercel الخاص بك
+                            # إضافة الخدعة في الرابط ليتعرف عليه KSign كملف IPA
                             all_apps[bundle] = {
                                 "name": name,
                                 "bundleIdentifier": bundle,
                                 "version": version,
                                 "versionDate": date,
                                 "size": size_in_bytes,
-                                "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}",
+                                "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}&file=app.ipa",
                                 "developerName": "ATTACK STORE",
                                 "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                                 "iconURL": icon_url,
                                 "tintColor": "#0180FF"
                             }
     except Exception as e:
-        print(f"❌ حدث خطأ أثناء الاتصال أو تحليل البيانات: {e}")
+        print(f"❌ حدث خطأ: {e}")
         return
 
     repo_data = {
@@ -97,7 +94,7 @@ def main():
     with open("repo.json", "w", encoding="utf-8") as f:
         json.dump(repo_data, f, ensure_ascii=False, indent=4)
         
-    print(f"✅ تمت العملية! تم استخراج {len(all_apps)} تطبيق وتحديث السورس بنجاح.")
+    print(f"✅ تمت العملية بنجاح!")
 
 if __name__ == "__main__":
     main()
