@@ -2,7 +2,9 @@ from curl_cffi import requests
 from bs4 import BeautifulSoup
 import json
 import html
+import datetime
 
+# رابط سيرفرك الوسيط على Vercel
 VERCEL_DOMAIN = "https://app-attack.vercel.app"
 
 def fix_url(url, base_domain="check0ver.net"):
@@ -14,18 +16,15 @@ def fix_url(url, base_domain="check0ver.net"):
     return f'https://{base_domain}/{url}'
 
 def convert_size_to_bytes(size_str):
-    """
-    تحويل الحجم من نص (مثلاً 169.45 MB) إلى رقم صحيح (بايت)
-    لأن أدوات التوقيع مثل KSign لا تفهم إلا لغة الأرقام الصافية.
-    """
+    """تحويل الحجم إلى بايت لكي يقرأه تطبيق KSign بشكل صحيح"""
     if not size_str or size_str == "غير معروف":
         return 0
     size_str = str(size_str).upper().replace(" ", "")
     try:
         if "MB" in size_str:
-            return int(float(size_str.replace("MB", "")) * 1024 * 1024)
+            return int(float(size_str.replace("MB", "")) * 1048576)
         elif "GB" in size_str:
-            return int(float(size_str.replace("GB", "")) * 1024 * 1024 * 1024)
+            return int(float(size_str.replace("GB", "")) * 1073741824)
         elif "KB" in size_str:
             return int(float(size_str.replace("KB", "")) * 1024)
         else:
@@ -60,25 +59,31 @@ def main():
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
                             app_uuid = app.get("uuid")
                             
-                            # تحويل الحجم إلى بايت
+                            # تخطي التطبيق إذا لم يكن يحتوي على معرف UUID
+                            if not app_uuid:
+                                continue
+                            
                             original_size = app.get("size", "0")
                             size_in_bytes = convert_size_to_bytes(original_size)
-                            
                             icon_url = fix_url(app.get("image", ""))
                             version = str(app.get("version", "1.0"))
                             name = app.get("name", "تطبيق بدون اسم")
                             desc = app.get("description", "لا يوجد وصف")
+                            date = app.get("updatedAt", datetime.datetime.utcnow().isoformat() + "Z")
 
-                            if app_uuid:
-                                all_apps[bundle] = {
-                                    "name": name,
-                                    "bundleIdentifier": bundle,
-                                    "version": version,
-                                    "size": size_in_bytes, # الآن الحجم رقم حقيقي وليس نصاً
-                                    "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}", # عودة الرابط الذكي لتفادي 404
-                                    "iconURL": icon_url,
-                                    "localizedDescription": f"{desc}\n\nالقسم: {cat_name}"
-                                }
+                            # إضافة التطبيق وتوجيه التحميل إلى سيرفر Vercel الخاص بك
+                            all_apps[bundle] = {
+                                "name": name,
+                                "bundleIdentifier": bundle,
+                                "version": version,
+                                "versionDate": date,
+                                "size": size_in_bytes,
+                                "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}",
+                                "developerName": "ATTACK STORE",
+                                "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
+                                "iconURL": icon_url,
+                                "tintColor": "#0180FF"
+                            }
     except Exception as e:
         print(f"❌ حدث خطأ أثناء الاتصال أو تحليل البيانات: {e}")
         return
