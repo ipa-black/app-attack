@@ -14,18 +14,16 @@ def fix_url(url, base_domain="check0ver.net"):
     if not url.startswith('http'): return f'https://{base_domain}/' + url
     return url
 
-# السر هنا: إضافة دعم GET و HEAD معاً لكي تنجح أدوات التوقيع في قراءة الملف
+# دعم طلبات GET و HEAD معاً، وإضافة 'file' لتمرير الامتداد الوهمي
 @app.api_route('/api/index', methods=["GET", "HEAD"])
-def get_fresh_ipa(uuid: str, request: Request):
+def get_fresh_ipa(uuid: str, request: Request, file: str = None):
     if not uuid:
         raise HTTPException(status_code=400, detail="Missing UUID")
 
     session = requests.Session(impersonate="safari_ios")
 
     try:
-        app_url = f"https://check0ver.net/ar/iapps/{uuid}"
-        app_page = session.get(app_url, timeout=15)
-        
+        app_page = session.get("https://check0ver.net/ar", timeout=15)
         soup = BeautifulSoup(app_page.text, 'html.parser')
         app_div = soup.find('div', id='app')
         
@@ -35,10 +33,9 @@ def get_fresh_ipa(uuid: str, request: Request):
             
             if fresh_url:
                 fresh_url = fix_url(fresh_url)
-                # التوجيه بالكود 302 ليعرف KSign أن الرابط انتقل لمكان آخر
                 return RedirectResponse(url=fresh_url, status_code=302)
                 
-        raise HTTPException(status_code=404, detail="لم يتم العثور على الرابط الطازج")
+        raise HTTPException(status_code=404, detail="لم يتم العثور على الرابط")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
