@@ -14,6 +14,7 @@ def fix_url(url, base_domain="check0ver.net"):
     return f'https://{base_domain}/{url}'
 
 def convert_size_to_bytes(size_str):
+    """تحويل الحجم إلى أرقام ليفهمه KSign بدون أخطاء 0.0MB"""
     if not size_str or size_str == "غير معروف": return 0
     size_str = str(size_str).upper().replace(" ", "")
     try:
@@ -23,15 +24,23 @@ def convert_size_to_bytes(size_str):
         else: return int(float(size_str))
     except: return 0
 
-def extract_all_apps_from_json(data, apps_dict, cat_name="عام"):
-    """دالة قناصة تبحث في أي مكان في الكود عن التطبيقات وتسحبها"""
-    found_new = False
+def extract_all_apps(data, apps_dict, cat_name="عام"):
+    """صائد التطبيقات: يبحث في أي مكان في الكود دون الاعتماد على الرابط المباشر"""
+    found_app_in_this_chunk = False
+    
     if isinstance(data, dict):
-        if "uuid" in data and "downloadURL" in data and ("bundle" in data or "uniqueBundle" in data):
-            bundle = data.get("uniqueBundle") or data.get("bundle") or data.get("uuid")
-            dl_url = data.get("downloadURL")
+        # شرط مرن: يكفي وجود uuid والاسم والحجم لكي نصطاد التطبيق
+        if "uuid" in data and "name" in data and "size" in data:
+            found_app_in_this_chunk = True
+            bundle = data.get("uniqueBundle") or data.get("bundle") or data.get("bundleIdentifier") or data.get("uuid")
+            app_uuid = data.get("uuid")
             
-            if bundle and dl_url and bundle not in apps_dict:
+            if bundle and bundle not in apps_dict:
+                # إذا الرابط المباشر موجود نسحبه، وإذا مخفي نولد الرابط الرسمي
+                dl_url = data.get("downloadURL")
+                if not dl_url:
+                    dl_url = f"https://check0ver.net/ar/iapps/{app_uuid}/download#.ipa"
+                    
                 size_in_bytes = convert_size_to_bytes(data.get("size", "0"))
                 icon_url = fix_url(data.get("image", ""))
                 version = str(data.get("version", "1.0"))
@@ -47,54 +56,54 @@ def extract_all_apps_from_json(data, apps_dict, cat_name="عام"):
                     "version": version,
                     "versionDate": date,
                     "size": size_in_bytes,
-                    "downloadURL": dl_url, # الرابط الأصلي المباشر من سيرفراتهم
+                    "downloadURL": dl_url,
                     "developerName": "ATTACK STORE",
                     "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                     "iconURL": icon_url,
                     "tintColor": "#0180FF"
                 }
-                found_new = True
         
+        # الغوص في باقي البيانات
         for k, v in data.items():
-            if extract_all_apps_from_json(v, apps_dict, cat_name):
-                found_new = True
+            if extract_all_apps(v, apps_dict, cat_name):
+                found_app_in_this_chunk = True
                 
     elif isinstance(data, list):
         for item in data:
-            if extract_all_apps_from_json(item, apps_dict, cat_name):
-                found_new = True
+            if extract_all_apps(item, apps_dict, cat_name):
+                found_app_in_this_chunk = True
                 
-    return found_new
+    return found_app_in_this_chunk
 
 def main():
-    print("🚀 بدء سحب التطبيقات من الجذور...")
+    print("🚀 بدء سحب جميع التطبيقات (أكثر من 10,000 تطبيق)...")
     session = requests.Session(impersonate="safari_ios")
     all_apps = {}
     
     try:
-        # 1. جلب الصفحة الرئيسية
+        # 1. جلب الصفحة الرئيسية والأقسام
         response = session.get("https://check0ver.net/ar", timeout=30.0)
         soup = BeautifulSoup(response.text, 'html.parser')
         app_div = soup.find('div', id='app')
         
         if not app_div:
-            print("❌ لم يتم العثور على البيانات.")
+            print("❌ لم يتم العثور على البيانات في الصفحة الرئيسية.")
             return
 
         page_data = json.loads(html.unescape(app_div['data-page']))
         categories = page_data.get("props", {}).get("categories", [])
         
-        # استخراج ما هو موجود في الصفحة الرئيسية
-        extract_all_apps_from_json(page_data, all_apps)
-        print(f"✅ تم سحب {len(all_apps)} تطبيق من الصفحة الرئيسية.")
+        # سحب التطبيقات من الواجهة كبداية
+        extract_all_apps(page_data, all_apps)
         
+        # مفاتيح تخطي الحماية للموقع
         inertia_version = page_data.get("version", "")
         headers = {
             "X-Inertia": "true",
             "X-Inertia-Version": inertia_version
         }
 
-        # 2. الدخول للأقسام وتقليب الصفحات (1، 2، 3...) لسحب الـ 10,000 تطبيق
+        # 2. الدخول للأقسام وتقليب الصفحات لسحب كل التطبيقات
         for cat in categories:
             cat_uuid = cat.get("uuid")
             cat_name = cat.get("name", "عام")
@@ -111,14 +120,15 @@ def main():
                         
                     cat_data = cat_resp.json()
                     
-                    # إذا لم نجد أي تطبيق جديد في هذه الصفحة، نوقف وننتقل للقسم اللي بعده
-                    found_any = extract_all_apps_from_json(cat_data, all_apps, cat_name)
+                    # هل وجدنا تطبيقات في هذه الصفحة؟
+                    found_any = extract_all_apps(cat_data, all_apps, cat_name)
                     
+                    # إذا الصفحة فارغة من التطبيقات، ننتقل للقسم التالي
                     if not found_any:
                         break
                         
                     page += 1
-                    time.sleep(1) # تأخير إجباري لتجنب حظر سيرفر GitHub
+                    time.sleep(1) # تأخير إجباري لتجنب حظر IP سيرفر GitHub
                     
                 except Exception as e:
                     print(f"⚠️ توقف في قسم {cat_name} صفحة {page}: {e}")
