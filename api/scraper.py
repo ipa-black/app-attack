@@ -1,10 +1,10 @@
-import httpx
+from curl_cffi import requests
 from bs4 import BeautifulSoup
 import json
 import html
+import time
 
-# ⚠️ ضع رابط Vercel الخاص بك هنا بعد إنشاء المشروع
-VERCEL_DOMAIN = "https://YOUR_VERCEL_APP_URL.vercel.app"
+VERCEL_DOMAIN = "https://app-attack.vercel.app"
 
 def fix_url(url, base_domain="check0ver.net"):
     if not url: return ""
@@ -26,7 +26,6 @@ def extract_apps(data, apps_dict, category_name="عام"):
                     "bundleIdentifier": bundle,
                     "version": str(data.get("version", "1.0")),
                     "size": str(data.get("size", "غير معروف")),
-                    # نرسل المستخدم لسيرفر Vercel ليجلب الرابط الطازج ويعيد توجيهه
                     "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}",
                     "iconURL": icon_url,
                     "localizedDescription": f"{data.get('description', 'لا يوجد وصف')}\n\nالقسم: {category_name}",
@@ -39,19 +38,14 @@ def extract_apps(data, apps_dict, category_name="عام"):
 
 def main():
     url = "https://check0ver.net/ar"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
-        "Accept": "text/html"
-    }
     all_apps = {}
     
     print("🚀 بدء بناء وتحديث متجر ATTACK STORE...")
+    session = requests.Session(impersonate="safari_ios")
     
     try:
-        with httpx.Client(headers=headers, timeout=30.0, http2=True) as client:
-            response = client.get(url)
-            response.raise_for_status()
-            
+        response = session.get(url, timeout=30.0)
+        if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
             app_div = soup.find('div', id='app')
             
@@ -69,7 +63,6 @@ def main():
         print(f"❌ حدث خطأ أثناء الاتصال: {e}")
         return
 
-    # بناء الهيكل المعتمد لتطبيقات السايدلود
     repo_data = {
         "name": "ATTACK STORE Repo",
         "identifier": "com.attackstore.repo",
