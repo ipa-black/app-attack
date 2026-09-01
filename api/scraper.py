@@ -13,7 +13,7 @@ def fix_url(url, base_domain="check0ver.net"):
     return f'https://{base_domain}/{url}'
 
 def convert_size_to_bytes(size_str):
-    """تحويل الحجم إلى أرقام صافية لكي تقبله تطبيقات التوقيع ولا تعطي 0.0MB"""
+    """تحويل الحجم إلى أرقام صافية لكي يقرأه KSign بشكل سليم ولا يعطي 0.0MB"""
     if not size_str or size_str == "غير معروف":
         return 0
     size_str = str(size_str).upper().replace(" ", "")
@@ -54,14 +54,12 @@ def main():
                         
                         for app in iapps:
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
-                            app_uuid = app.get("uuid")
                             
-                            if not app_uuid:
+                            # أخذ الرابط الأصلي المباشر من الموقع بدون أي تعديل أو Vercel
+                            download_url = app.get("downloadURL", "")
+                            
+                            if not download_url:
                                 continue
-                            
-                            # الحل الجذري: استخدام الـ API الدائم للموقع مع خدعة #.ipa
-                            # هذا الرابط سيولد رابط طازج في كل مرة تضغط فيها تحميل داخل KSign
-                            download_url = f"https://check0ver.net/api/iapps/{app_uuid}/download#.ipa"
                             
                             original_size = app.get("size", "0")
                             size_in_bytes = convert_size_to_bytes(original_size)
@@ -77,7 +75,7 @@ def main():
                                 "version": version,
                                 "versionDate": date,
                                 "size": size_in_bytes,
-                                "downloadURL": download_url,
+                                "downloadURL": download_url, # الرابط الأصلي مباشرة
                                 "developerName": "ATTACK STORE",
                                 "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                                 "iconURL": icon_url,
