@@ -1,15 +1,13 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from curl_cffi import requests
-from bs4 import BeautifulSoup
-import json
-import html
+import re
 
 app = FastAPI()
 
 @app.api_route('/api/index', methods=["GET", "HEAD"])
 def get_fresh_ipa(uuid: str, request: Request, size: int = 0, file: str = None):
-    # 1. الدرع الواقي: إعطاء KSign الحجم فوراً لمنع حظر جهازك أو تعليق الأداة
+    # 1. الدرع الواقي: إعطاء الحجم فوراً لـ KSign بدون الضغط على الموقع الأصلي (لمنع الحظر)
     if request.method == "HEAD":
         return Response(
             status_code=200, 
@@ -17,51 +15,32 @@ def get_fresh_ipa(uuid: str, request: Request, size: int = 0, file: str = None):
             headers={"Content-Length": str(size)}
         )
 
-    # 2. سحب الرابط الطازج وقت التحميل الفعلي
     session = requests.Session(impersonate="safari_ios")
+    
     try:
-        # الدخول كمتصفح حقيقي إلى صفحة التطبيق الخاصة
-        app_url = f"https://check0ver.net/ar/iapps/{uuid}"
-        app_page = session.get(app_url, timeout=15)
+        fresh_url = None
         
-        soup = BeautifulSoup(app_page.text, 'html.parser')
-        app_div = soup.find('div', id='app')
+        # محاولة 1: اختبار ما إذا كان مسار التحميل يوجهنا مباشرة للملف (Redirect)
+        dl_resp = session.get(f"https://check0ver.net/ar/iapps/{uuid}/download", allow_redirects=False, timeout=10)
+        if dl_resp.status_code in [301, 302, 303, 307, 308]:
+            fresh_url = dl_resp.headers.get("Location")
         
-        if app_div and app_div.has_attr('data-page'):
-            data = json.loads(html.unescape(app_div['data-page']))
+        # محاولة 2: إذا لم يكن هناك توجيه مباشر، ندخل لصفحة التطبيق ونشغل "صائد الروابط"
+        if not fresh_url:
+            app_page = session.get(f"https://check0ver.net/ar/iapps/{uuid}", timeout=10)
+            # تنظيف الكود لتسهيل عملية الصيد
+            clean_text = app_page.text.replace('\\/', '/')
             
-            # استخراج الرابط المباشر الصافي (الذي ينتهي بـ .ipa)
-            fresh_url = None
-            iapp = data.get("props", {}).get("iapp", {})
-            if isinstance(iapp, dict) and "downloadURL" in iapp:
-                fresh_url = iapp.get("downloadURL")
+            # صائد الروابط السحري: يبحث عن أي رابط ينتهي بـ .ipa حتى لو كان مخفياً
+            match = re.search(r'(https?://[^"\'\s]+\.ipa[^"\'\s]*)', clean_text)
+            if match:
+                fresh_url = match.group(1)
+
+        if fresh_url:
+            # توجيه KSign للرابط الطازج لبدء التحميل فوراً
+            return RedirectResponse(url=fresh_url, status_code=302)
             
-            # بحث بديل في حال تغير مكان الرابط
-            if not fresh_url:
-                fresh_url = find_download_url(data, uuid)
-                
-            if fresh_url:
-                # التأكد من صحة الرابط وتوجيه KSign إليه ليبدأ التنزيل كالصاروخ
-                if fresh_url.startswith('//'): fresh_url = 'https:' + fresh_url
-                elif fresh_url.startswith('/'): fresh_url = 'https://check0ver.net' + fresh_url
-                
-                return RedirectResponse(url=fresh_url, status_code=302)
-                
-        raise HTTPException(status_code=404, detail="لم يتم العثور على الرابط المباشر")
+        raise HTTPException(status_code=404, detail="لم نتمكن من صيد رابط التطبيق من الكود")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-def find_download_url(data, target_uuid):
-    """دالة احتياطية للبحث عن الرابط داخل الهيكل"""
-    if isinstance(data, dict):
-        if data.get("uuid") == target_uuid and "downloadURL" in data:
-            return data.get("downloadURL")
-        for k, v in data.items():
-            res = find_download_url(v, target_uuid)
-            if res: return res
-    elif isinstance(data, list):
-        for item in data:
-            res = find_download_url(item, target_uuid)
-            if res: return res
-    return None
