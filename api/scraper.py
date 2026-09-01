@@ -54,11 +54,14 @@ def main():
                         
                         for app in iapps:
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
+                            app_uuid = app.get("uuid")
                             
-                            # أخذ الرابط الأصلي المباشر من الموقع
-                            download_url = app.get("downloadURL", "")
-                            if not download_url:
+                            if not app_uuid:
                                 continue
+                            
+                            # الحل الجذري: استخدام الـ API الدائم للموقع مع خدعة #.ipa
+                            # هذا الرابط سيولد رابط طازج في كل مرة تضغط فيها تحميل داخل KSign
+                            download_url = f"https://check0ver.net/api/iapps/{app_uuid}/download#.ipa"
                             
                             original_size = app.get("size", "0")
                             size_in_bytes = convert_size_to_bytes(original_size)
@@ -68,14 +71,13 @@ def main():
                             desc = app.get("description", "لا يوجد وصف")
                             date = app.get("updatedAt", datetime.datetime.utcnow().isoformat() + "Z")
 
-                            # إضافة التطبيق للقاموس بالرابط المباشر
                             all_apps[bundle] = {
                                 "name": name,
                                 "bundleIdentifier": bundle,
                                 "version": version,
                                 "versionDate": date,
                                 "size": size_in_bytes,
-                                "downloadURL": download_url, # الرابط الأصلي الذي يدعمه KSign
+                                "downloadURL": download_url,
                                 "developerName": "ATTACK STORE",
                                 "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                                 "iconURL": icon_url,
