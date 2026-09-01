@@ -24,7 +24,7 @@ jobs:
         run: pip install fastapi curl_cffi beautifulsoup4 httpx
 
       - name: تشغيل الجلب اللحظي
-        run: python scraper.py
+        run: python api/scraper.py
 
       - name: حفظ السورس الجديد
         run: |
