@@ -4,16 +4,8 @@ import json
 import html
 import datetime
 
-def fix_url(url, base_domain="check0ver.net"):
-    if not url: return ""
-    url = str(url).strip()
-    if url.startswith('http://') or url.startswith('https://'): return url
-    if url.startswith('//'): return 'https:' + url
-    if url.startswith('/'): return f'https://{base_domain}{url}'
-    return f'https://{base_domain}/{url}'
-
 def convert_size_to_bytes(size_str):
-    """تحويل الحجم إلى أرقام صافية لكي يقرأه KSign بشكل سليم ولا يعطي 0.0MB"""
+    """تحويل الحجم إلى أرقام صافية لكي يقرأه KSign ولا يظهر 0.0"""
     if not size_str or size_str == "غير معروف":
         return 0
     size_str = str(size_str).upper().replace(" ", "")
@@ -33,7 +25,6 @@ def main():
     url = "https://check0ver.net/ar"
     all_apps = {}
     
-    print("🚀 بدء سحب التطبيقات وبناء متجر ATTACK STORE...")
     session = requests.Session(impersonate="safari_ios")
     
     try:
@@ -54,16 +45,22 @@ def main():
                         
                         for app in iapps:
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
+                            app_uuid = app.get("uuid")
                             
-                            # أخذ الرابط الأصلي المباشر من الموقع بدون أي تعديل أو Vercel
-                            download_url = app.get("downloadURL", "")
-                            
-                            if not download_url:
+                            if not app_uuid:
                                 continue
                             
+                            # الرابط الرسمي المستخرج من كود الموقع لتوليد التوكن تلقائياً
+                            download_url = f"https://check0ver.net/api/iapps/{app_uuid}/download#.ipa"
+                            
+                            # استخراج الحجم الصحيح وتحويله إلى بايت
                             original_size = app.get("size", "0")
                             size_in_bytes = convert_size_to_bytes(original_size)
-                            icon_url = fix_url(app.get("image", ""))
+                            
+                            icon_url = str(app.get("image", "")).strip()
+                            if icon_url.startswith('/'): 
+                                icon_url = "https://check0ver.net" + icon_url
+                                
                             version = str(app.get("version", "1.0"))
                             name = app.get("name", "تطبيق بدون اسم")
                             desc = app.get("description", "لا يوجد وصف")
@@ -74,8 +71,8 @@ def main():
                                 "bundleIdentifier": bundle,
                                 "version": version,
                                 "versionDate": date,
-                                "size": size_in_bytes,
-                                "downloadURL": download_url, # الرابط الأصلي مباشرة
+                                "size": size_in_bytes, # سيقرأه KSign كرقم حقيقي
+                                "downloadURL": download_url,
                                 "developerName": "ATTACK STORE",
                                 "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                                 "iconURL": icon_url,
@@ -94,7 +91,7 @@ def main():
     with open("repo.json", "w", encoding="utf-8") as f:
         json.dump(repo_data, f, ensure_ascii=False, indent=4)
         
-    print(f"✅ تمت العملية! تم استخراج {len(all_apps)} تطبيق وتحديث السورس بنجاح.")
+    print(f"✅ تم استخراج {len(all_apps)} تطبيق وتحديث السورس.")
 
 if __name__ == "__main__":
     main()
