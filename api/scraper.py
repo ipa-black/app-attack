@@ -5,9 +5,6 @@ import html
 import datetime
 import time
 
-# رابط Vercel الخاص بك الذي يحمي الـ IP
-VERCEL_DOMAIN = "https://app-attack.vercel.app"
-
 def fix_url(url, base_domain="check0ver.net"):
     if not url: return ""
     url = str(url).strip()
@@ -26,15 +23,15 @@ def convert_size_to_bytes(size_str):
         else: return int(float(size_str))
     except: return 0
 
-def extract_apps_recursive(data, apps_dict, cat_name):
-    """دالة ذكية تبحث في كامل الهيكل البرمجي للصفحة لاصطياد أي تطبيق مخفي"""
+def extract_all_apps_from_json(data, apps_dict, cat_name="عام"):
+    """دالة قناصة تبحث في أي مكان في الكود عن التطبيقات وتسحبها"""
+    found_new = False
     if isinstance(data, dict):
-        # إذا وجدنا قاموساً يحتوي على مواصفات التطبيق، نسحبه فوراً
-        if "uuid" in data and "name" in data and ("uniqueBundle" in data or "bundle" in data):
+        if "uuid" in data and "downloadURL" in data and ("bundle" in data or "uniqueBundle" in data):
             bundle = data.get("uniqueBundle") or data.get("bundle") or data.get("uuid")
-            app_uuid = data.get("uuid")
+            dl_url = data.get("downloadURL")
             
-            if app_uuid:
+            if bundle and dl_url and bundle not in apps_dict:
                 size_in_bytes = convert_size_to_bytes(data.get("size", "0"))
                 icon_url = fix_url(data.get("image", ""))
                 version = str(data.get("version", "1.0"))
@@ -44,44 +41,33 @@ def extract_apps_recursive(data, apps_dict, cat_name):
                 raw_date = data.get("updatedAt", "")
                 date = raw_date[:10] if len(raw_date) >= 10 else datetime.datetime.utcnow().strftime("%Y-%m-%d")
 
-                # تمرير حجم التطبيق إلى Vercel ليقرأه KSign فوراً دون حظر
                 apps_dict[bundle] = {
                     "name": name,
                     "bundleIdentifier": bundle,
                     "version": version,
                     "versionDate": date,
                     "size": size_in_bytes,
-                    "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}&size={size_in_bytes}&file=app.ipa",
+                    "downloadURL": dl_url, # الرابط الأصلي المباشر من سيرفراتهم
                     "developerName": "ATTACK STORE",
                     "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                     "iconURL": icon_url,
                     "tintColor": "#0180FF"
                 }
+                found_new = True
         
-        # إكمال الغوص والبحث في باقي الملف
         for k, v in data.items():
-            extract_apps_recursive(v, apps_dict, cat_name)
-            
+            if extract_all_apps_from_json(v, apps_dict, cat_name):
+                found_new = True
+                
     elif isinstance(data, list):
         for item in data:
-            extract_apps_recursive(item, apps_dict, cat_name)
-
-def find_next_page(data):
-    """دالة ذكية تبحث عن رابط الصفحة التالية في أي مكان داخل الكود"""
-    if isinstance(data, dict):
-        if "next_page_url" in data and data["next_page_url"]:
-            return data["next_page_url"]
-        for k, v in data.items():
-            res = find_next_page(v)
-            if res: return res
-    elif isinstance(data, list):
-        for item in data:
-            res = find_next_page(item)
-            if res: return res
-    return None
+            if extract_all_apps_from_json(item, apps_dict, cat_name):
+                found_new = True
+                
+    return found_new
 
 def main():
-    print("🚀 بدء سحب جميع التطبيقات (أكثر من 10,000 تطبيق)...")
+    print("🚀 بدء سحب التطبيقات من الجذور...")
     session = requests.Session(impersonate="safari_ios")
     all_apps = {}
     
@@ -98,8 +84,9 @@ def main():
         page_data = json.loads(html.unescape(app_div['data-page']))
         categories = page_data.get("props", {}).get("categories", [])
         
-        # سحب التطبيقات الموجودة بالواجهة كبداية
-        extract_apps_recursive(page_data, all_apps, "عام")
+        # استخراج ما هو موجود في الصفحة الرئيسية
+        extract_all_apps_from_json(page_data, all_apps)
+        print(f"✅ تم سحب {len(all_apps)} تطبيق من الصفحة الرئيسية.")
         
         inertia_version = page_data.get("version", "")
         headers = {
@@ -107,35 +94,34 @@ def main():
             "X-Inertia-Version": inertia_version
         }
 
-        # 2. الدخول للأقسام وتقليب الصفحات
+        # 2. الدخول للأقسام وتقليب الصفحات (1، 2، 3...) لسحب الـ 10,000 تطبيق
         for cat in categories:
             cat_uuid = cat.get("uuid")
             cat_name = cat.get("name", "عام")
-            print(f"📂 جلب قسم: {cat_name}")
+            print(f"📂 جاري مسح قسم: {cat_name}...")
             
-            next_url = f"https://check0ver.net/ar/categories/{cat_uuid}"
-            
-            while next_url:
+            page = 1
+            while True:
                 try:
-                    cat_resp = session.get(next_url, headers=headers, timeout=30.0)
+                    cat_url = f"https://check0ver.net/ar/categories/{cat_uuid}?page={page}"
+                    cat_resp = session.get(cat_url, headers=headers, timeout=20.0)
+                    
                     if cat_resp.status_code != 200:
                         break
                         
                     cat_data = cat_resp.json()
                     
-                    # البحث الشامل عن التطبيقات في هذه الصفحة
-                    extract_apps_recursive(cat_data, all_apps, cat_name)
+                    # إذا لم نجد أي تطبيق جديد في هذه الصفحة، نوقف وننتقل للقسم اللي بعده
+                    found_any = extract_all_apps_from_json(cat_data, all_apps, cat_name)
                     
-                    # البحث عن زر الصفحة التالية
-                    next_url_raw = find_next_page(cat_data)
-                    if next_url_raw:
-                        next_url = fix_url(next_url_raw)
-                        time.sleep(0.3) # فاصل زمني لتجنب حظر سيرفر GitHub
-                    else:
-                        next_url = None
+                    if not found_any:
+                        break
                         
+                    page += 1
+                    time.sleep(1) # تأخير إجباري لتجنب حظر سيرفر GitHub
+                    
                 except Exception as e:
-                    print(f"⚠️ خطأ في الصفحة {next_url}: {e}")
+                    print(f"⚠️ توقف في قسم {cat_name} صفحة {page}: {e}")
                     break
                     
     except Exception as e:
@@ -151,7 +137,7 @@ def main():
     with open("repo.json", "w", encoding="utf-8") as f:
         json.dump(repo_data, f, ensure_ascii=False, indent=4)
         
-    print(f"✅ تمت العملية! تم استخراج {len(all_apps)} تطبيق بنجاح.")
+    print(f"🎉 تمت العملية بنجاح! الإجمالي: {len(all_apps)} تطبيق.")
 
 if __name__ == "__main__":
     main()
