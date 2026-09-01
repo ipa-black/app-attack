@@ -4,8 +4,6 @@ import json
 import html
 import datetime
 
-VERCEL_DOMAIN = "https://app-attack.vercel.app"
-
 def fix_url(url, base_domain="check0ver.net"):
     if not url: return ""
     url = str(url).strip()
@@ -15,6 +13,7 @@ def fix_url(url, base_domain="check0ver.net"):
     return f'https://{base_domain}/{url}'
 
 def convert_size_to_bytes(size_str):
+    """تحويل الحجم إلى أرقام صافية لكي تقبله تطبيقات التوقيع ولا تعطي 0.0MB"""
     if not size_str or size_str == "غير معروف":
         return 0
     size_str = str(size_str).upper().replace(" ", "")
@@ -55,9 +54,10 @@ def main():
                         
                         for app in iapps:
                             bundle = app.get("uniqueBundle") or app.get("bundle") or app.get("uuid", "unknown")
-                            app_uuid = app.get("uuid")
                             
-                            if not app_uuid:
+                            # أخذ الرابط الأصلي المباشر من الموقع
+                            download_url = app.get("downloadURL", "")
+                            if not download_url:
                                 continue
                             
                             original_size = app.get("size", "0")
@@ -68,14 +68,14 @@ def main():
                             desc = app.get("description", "لا يوجد وصف")
                             date = app.get("updatedAt", datetime.datetime.utcnow().isoformat() + "Z")
 
-                            # إضافة الخدعة في الرابط ليتعرف عليه KSign كملف IPA
+                            # إضافة التطبيق للقاموس بالرابط المباشر
                             all_apps[bundle] = {
                                 "name": name,
                                 "bundleIdentifier": bundle,
                                 "version": version,
                                 "versionDate": date,
                                 "size": size_in_bytes,
-                                "downloadURL": f"{VERCEL_DOMAIN}/api/index?uuid={app_uuid}&file=app.ipa",
+                                "downloadURL": download_url, # الرابط الأصلي الذي يدعمه KSign
                                 "developerName": "ATTACK STORE",
                                 "localizedDescription": f"{desc}\n\nالقسم: {cat_name}",
                                 "iconURL": icon_url,
@@ -94,7 +94,7 @@ def main():
     with open("repo.json", "w", encoding="utf-8") as f:
         json.dump(repo_data, f, ensure_ascii=False, indent=4)
         
-    print(f"✅ تمت العملية بنجاح!")
+    print(f"✅ تمت العملية! تم استخراج {len(all_apps)} تطبيق وتحديث السورس بنجاح.")
 
 if __name__ == "__main__":
     main()
