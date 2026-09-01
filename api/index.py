@@ -1,65 +1,21 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse, Response
-from curl_cffi import requests
-from bs4 import BeautifulSoup
-import json
-import html
 
 app = FastAPI()
 
-def fix_url(url, base_domain="check0ver.net"):
-    if not url: return url
-    if url.startswith('//'): return 'https:' + url
-    if url.startswith('/'): return f'https://{base_domain}' + url
-    if not url.startswith('http'): return f'https://{base_domain}/' + url
-    return url
-
 @app.api_route('/api/index', methods=["GET", "HEAD"])
 def get_fresh_ipa(uuid: str, request: Request, size: int = 0, file: str = None):
-    # السلاح السري لمنع حظر الـ IP: الرد الفوري على طلبات الفحص الكثيفة من KSign
+    # 1. الدرع الواقي: صد طلبات فحص KSign الوهمية لمنع حظر الـ IP الخاص بك
+    # Vercel سيرد على KSign بالحجم مباشرة دون الضغط على الموقع الهدف
     if request.method == "HEAD":
         return Response(
             status_code=200, 
-            media_type="application/octet-stream", 
+            media_type="application/octet-stream",
             headers={"Content-Length": str(size)}
         )
 
-    # عند بدء التحميل الفعلي (GET)، نقوم بسحب الرابط الطازج
-    session = requests.Session(impersonate="safari_ios")
-    try:
-        app_url = f"https://check0ver.net/ar/iapps/{uuid}"
-        app_page = session.get(app_url, timeout=15)
-        
-        soup = BeautifulSoup(app_page.text, 'html.parser')
-        app_div = soup.find('div', id='app')
-        
-        if app_div and app_div.has_attr('data-page'):
-            data = json.loads(html.unescape(app_div['data-page']))
-            
-            # الدخول لخصائص التطبيق لسحب الرابط
-            iapp = data.get("props", {}).get("iapp", {})
-            fresh_url = iapp.get("downloadURL")
-            
-            if not fresh_url:
-                fresh_url = find_download_url(data, uuid)
-                
-            if fresh_url:
-                fresh_url = fix_url(fresh_url)
-                return RedirectResponse(url=fresh_url, status_code=302)
-                
-        raise HTTPException(status_code=404, detail="لم يتم العثور على الرابط الطازج")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    # 2. التحميل الفعلي: توجيه تطبيق التوقيع إلى الرابط الرسمي المباشر
+    # بمجرد أن تضغط تنزيل، سيتم تحويلك لهذا المسار الذي سيعطيك ملف IPA طازج دائماً
+    official_download_url = f"https://check0ver.net/ar/iapps/{uuid}/download"
+    return RedirectResponse(url=official_download_url, status_code=302)
 
-def find_download_url(data, target_uuid):
-    if isinstance(data, dict):
-        if data.get("uuid") == target_uuid and "downloadURL" in data:
-            return data.get("downloadURL")
-        for k, v in data.items():
-            res = find_download_url(v, target_uuid)
-            if res: return res
-    elif isinstance(data, list):
-        for item in data:
-            res = find_download_url(item, target_uuid)
-            if res: return res
-    return None
