@@ -1,0 +1,35 @@
+name: Auto Update ATTACK STORE
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update_repo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: جلب الكود
+        uses: actions/checkout@v4
+
+      - name: تجهيز بايثون
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: تثبيت المكتبات
+        run: pip install fastapi curl_cffi beautifulsoup4 httpx
+
+      - name: تشغيل الجلب اللحظي
+        run: python scraper.py
+
+      - name: حفظ السورس الجديد
+        run: |
+          git config --global user.name "GitHub Action Bot"
+          git config --global user.email "action@github.com"
+          git add repo.json
+          git commit -m "تحديث تلقائي لقاعدة بيانات المتجر" || exit 0
+          git push
